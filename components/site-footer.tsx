@@ -1,93 +1,94 @@
-import Link from "next/link"
-import { Facebook, Instagram, Twitter, Youtube } from "lucide-react"
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export function SiteFooter() {
+  const t = useTranslations('footer');
+
   return (
     <footer className="border-t bg-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid gap-8 md:grid-cols-4">
+          {/* Company Info */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">কাস্টমার কেয়ার</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  সাহায্য
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  অর্ডার ট্র্যাকিং
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  শিপিং এবং ডেলিভারি
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  রিটার্ন পলিসি
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="mb-4 text-sm font-semibold">আমাদের সম্পর্কে</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  আমাদের সম্পর্কে
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  যোগাযোগ
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  ক্যারিয়ার
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-600 hover:text-teal-600">
-                  প্রেস
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="mb-4 text-sm font-semibold">পেমেন্ট মেথড</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-8 w-16 rounded bg-gray-200"></div>
-              ))}
+            <Link href="/" className="mb-4 inline-block">
+              <div className="relative h-12 w-32">
+                <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+              </div>
+            </Link>
+            <p className="mb-4 text-sm text-gray-600">
+              {t('about')}
+            </p>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>{t('address')}</p>
+              <p>{t('phone')}</p>
+              <p>{t('email')}</p>
             </div>
           </div>
+
+          {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold">আমাদের সাথে যোগাযোগ করুন</h3>
+            <h3 className="mb-4 text-lg font-semibold">{t('quickLinks')}</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/about" className="text-sm text-gray-600 hover:text-gray-900">
+                  {t('about')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900">
+                  {t('contact')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="text-sm text-gray-600 hover:text-gray-900">
+                  {t('privacy')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-sm text-gray-600 hover:text-gray-900">
+                  {t('terms')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social Media */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">{t('social')}</h3>
+            <p className="mb-4 text-sm text-gray-600">{t('followUs')}</p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-gray-600 hover:text-teal-600">
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-teal-600">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-teal-600">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-teal-600">
-                <Youtube className="h-5 w-5" />
-              </Link>
+              <a href="#" className="text-gray-600 hover:text-gray-900">
+                <Image src="/icons/facebook.png" alt="Facebook" width={24} height={24} />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">
+                <Image src="/icons/twitter.png" alt="Twitter" width={24} height={24} />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">
+                <Image src="/icons/instagram.png" alt="Instagram" width={24} height={24} />
+              </a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">
+                <Image src="/icons/linkedin.png" alt="LinkedIn" width={24} height={24} />
+              </a>
             </div>
-            <p className="mt-4 text-sm text-gray-600">ঠিকানা: ১২৩ বুক স্ট্রিট, ঢাকা, বাংলাদেশ</p>
-            <p className="mt-2 text-sm text-gray-600">ফোন: +৮৮০ ১২৩৪৫৬৭৮৯০</p>
+          </div>
+
+          {/* Payment Methods */}
+          <div>
+            <h3 className="mb-4 text-lg font-semibold">{t('paymentMethods')}</h3>
+            <div className="flex flex-wrap gap-2">
+              <Image src="/icons/visa.png" alt="Visa" width={48} height={32} />
+              <Image src="/icons/mastercard.png" alt="Mastercard" width={48} height={32} />
+              <Image src="/icons/bkash.png" alt="bKash" width={48} height={32} />
+              <Image src="/icons/nagad.png" alt="Nagad" width={48} height={32} />
+            </div>
           </div>
         </div>
-        <div className="mt-8 border-t pt-6 text-center text-sm text-gray-600">
-          <p>&copy; {new Date().getFullYear()} গার্ডিয়ান পাবলিকেশন্স। সর্বস্বত্ব সংরক্ষিত।</p>
+
+        <div className="mt-8 border-t pt-8 text-center text-sm text-gray-600">
+          <p>© {new Date().getFullYear()} Guardian Publications. {t('copyright')}</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

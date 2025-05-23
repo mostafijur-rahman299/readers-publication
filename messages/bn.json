@@ -1,0 +1,31 @@
+{
+    "header": {
+        "support": "সাপোর্ট",
+        "wishlist": "উইশলিস্ট",
+        "cart": "কার্ট",
+        "language": "ভাষা",
+        "signIn": "সাইন ইন",
+        "signUp": "সাইন আপ",
+        "logout": "লগআউট",
+        "search": "খোজ করুন",
+        "home": "মূল পৃষ্ঠা",
+        "all_category": "সকল বই",
+        "special_package": "স্পেশাল প্যাকেজ",
+        "writer": "লেখক",
+        "blog": "ব্লগ",
+        "contact": "যোগাযোগ করুন"
+    },
+    "footer": {
+        "about": "আমাদের সম্পর্কে",
+        "contact": "যোগাযোগ করুন",
+        "privacy": "গোপনীয়তা নীতি",
+        "terms": "নীতির শর্তাবলী",
+        "copyright": "সর্বস্বত্ব সংরক্ষিত",
+        "address": "ঠিকানা",
+        "phone": "ফোন",
+        "email": "ইমেইল",
+        "social": "সামাজিক যোগাযোগ",
+        "followUs": "আমাদের সাথে যোগাযোগ করুন",
+        "paymentMethods": "পেমেন্ট মেথড"
+    }
+}

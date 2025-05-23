@@ -1,0 +1,32 @@
+{
+    "header": {
+        "support": "Support",
+        "wishlist": "Wishlist",
+        "cart": "Cart",
+        "language": "Language",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "logout": "Logout",
+        "search": "Search",
+        "home": "Home",
+        "all_category": "All Category",
+        "special_package": "Special Package",
+        "writer": "Writer",
+        "blog": "Blog",
+        "contact": "Contact"
+    },
+    "footer": {
+        "about": "About",
+        "contact": "Contact",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "copyright": "Copyright",
+        "address": "Address",
+        "phone": "Phone",
+        "email": "Email",
+        "social": "Social Media",
+        "followUs": "Follow Us",
+        "paymentMethods": "Payment Methods",
+        "quickLinks": "Quick Links"
+    }
+}
