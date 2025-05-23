@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
 
 export default function SignInPage() {
-  const t = useTranslations('signin');
+  const t = useTranslations('forgot_password');
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -117,52 +117,6 @@ export default function SignInPage() {
                   {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                      {t('password')}
-                    </Label>
-                    <Link href={`/${currentLocale}/forgot-password`} className="text-xs font-medium text-brand-600 hover:text-brand-500">
-                      {t('forgot_password')}
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Lock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder={t('password_placeholder')}
-                      className={`pl-10 pr-10 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
-                      onClick={togglePasswordVisibility}
-                      disabled={isLoading}
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
-                </div>
-
-                <div className="flex items-center">
-                  <Checkbox
-                    id="remember-me"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    disabled={isLoading}
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                    {t('remember_me')}
-                  </label>
-                </div>
-
                 <Button
                   type="submit"
                   className="w-full bg-brand-600 hover:bg-brand-700 transition-colors"
@@ -193,36 +147,19 @@ export default function SignInPage() {
                       <span>{t('processing')}</span>
                     </div>
                   ) : (
-                    t('sign_in')
+                    t('send')
                   )}
                 </Button>
 
                 <div className="text-center text-sm">
-                  <span className="text-gray-600">{t('dont_have_account')}</span>{" "}
-                  <Link href={`/${currentLocale}/signup`} className="font-medium text-brand-600 hover:text-brand-500">
-                    {t('sign_up')}
+                  <span className="text-gray-600">{t('want_to_sign_in')}</span>{" "}
+                  <Link href={`/${currentLocale}/signin`} className="font-medium text-brand-600 hover:text-brand-500">
+                    {t('sign_in')}
                   </Link>
                 </div>
               </form>
 
-              <div className="mt-6">
-                <div className="fancy-divider">
-                  <span>{t('or_via')}</span>
-                </div>
-
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    className="btn-hover-effect flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                    disabled={isLoading}
-                  >
-                    <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
-                    </svg>
-                    <span>{t('sign_in_with_google')}</span>
-                  </button>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>

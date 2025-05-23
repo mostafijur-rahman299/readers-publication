@@ -12,8 +12,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useRouter } from "next/navigation"
+import { useLocale, useTranslations } from 'next-intl';
 
 export default function SignUpPage() {
+  const t = useTranslations('signup');
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [name, setName] = useState("")
@@ -33,6 +35,8 @@ export default function SignUpPage() {
   }>({})
   const router = useRouter()
 
+  const currentLocale = useLocale()
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
@@ -42,74 +46,21 @@ export default function SignUpPage() {
   }
 
   const validateForm = () => {
-    const newErrors: {
-      name?: string
-      email?: string
-      phone?: string
-      password?: string
-      confirmPassword?: string
-      agreeTerms?: string
-    } = {}
-    let isValid = true
-
-    if (!name) {
-      newErrors.name = "নাম আবশ্যক"
-      isValid = false
-    }
-
-    if (!email) {
-      newErrors.email = "ইমেইল আবশ্যক"
-      isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "সঠিক ইমেইল দিন"
-      isValid = false
-    }
-
-    if (!phone) {
-      newErrors.phone = "ফোন নম্বর আবশ্যক"
-      isValid = false
-    } else if (!/^[0-9]{11}$/.test(phone)) {
-      newErrors.phone = "সঠিক ফোন নম্বর দিন (১১ সংখ্যা)"
-      isValid = false
-    }
-
-    if (!password) {
-      newErrors.password = "পাসওয়ার্ড আবশ্যক"
-      isValid = false
-    } else if (password.length < 6) {
-      newErrors.password = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"
-      isValid = false
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "পাসওয়ার্ড নিশ্চিত করুন"
-      isValid = false
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "পাসওয়ার্ড মিলছে না"
-      isValid = false
-    }
-
-    if (!agreeTerms) {
-      newErrors.agreeTerms = "শর্তাবলী গ্রহণ করুন"
-      isValid = false
-    }
-
-    setErrors(newErrors)
-    return isValid
+    
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (validateForm()) {
-      setIsLoading(true)
+    // e.preventDefault()
+    // if (validateForm()) {
+    //   setIsLoading(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", { name, email, phone, password, agreeTerms })
-        setIsLoading(false)
-        router.push("/signin")
-      }, 1500)
-    }
+    //   // Simulate API call
+    //   setTimeout(() => {
+    //     console.log("Form submitted:", { name, email, phone, password, agreeTerms })
+    //     setIsLoading(false)
+    //     router.push("/signin")
+    //   }, 1500)
+    // }
   }
 
   return (
@@ -122,8 +73,8 @@ export default function SignUpPage() {
           <div className="overflow-hidden rounded-xl bg-white shadow-lg">
             <div className="relative h-32 bg-gradient-to-r from-brand-600 to-brand-700">
               <div className="absolute left-8 top-8">
-                <h1 className="text-3xl font-bold text-white">নতুন অ্যাকাউন্ট তৈরি করুন</h1>
-                <p className="mt-2 text-brand-100">আপনার তথ্য দিয়ে রেজিস্ট্রেশন করুন</p>
+                <h1 className="text-3xl font-bold text-white">{t('title')}</h1>
+                <p className="mt-2 text-brand-100">{t('description')}</p>
               </div>
             </div>
 
@@ -139,28 +90,18 @@ export default function SignUpPage() {
                       <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
                       </svg>
-                      <span>গুগল দিয়ে রেজিস্ট্রেশন</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-hover-effect flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                      disabled={isLoading}
-                    >
-                      <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M22,12c0-5.52-4.48-10-10-10S2,6.48,2,12c0,4.84,3.44,8.87,8,9.8V15H8v-3h2V9.5C10,7.57,11.57,6,13.5,6H16v3h-2 c-0.55,0-1,0.45-1,1v2h3v3h-3v6.95C18.05,21.45,22,17.19,22,12z" />
-                      </svg>
-                      <span>ফেসবুক দিয়ে রেজিস্ট্রেশন</span>
+                      <span>{t('register_with_google')}</span>
                     </button>
                   </div>
 
                   <div className="fancy-divider">
-                    <span>অথবা ইমেইল দিয়ে রেজিস্ট্রেশন করুন</span>
+                    <span>{t('register_with_email')}</span>
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
-                    নাম
+                    {t('name')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -169,7 +110,7 @@ export default function SignUpPage() {
                     <Input
                       id="name"
                       type="text"
-                      placeholder="আপনার পূর্ণ নাম"
+                      placeholder={t('name_placeholder')}
                       className={`pl-10 ${errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -181,7 +122,7 @@ export default function SignUpPage() {
 
                 <div>
                   <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-                    ইমেইল
+                    {t('email')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -190,7 +131,7 @@ export default function SignUpPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="আপনার ইমেইল"
+                      placeholder={t('email_placeholder')}
                       className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -202,7 +143,7 @@ export default function SignUpPage() {
 
                 <div>
                   <Label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">
-                    ফোন নম্বর
+                    {t('phone')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -211,7 +152,7 @@ export default function SignUpPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="আপনার ফোন নম্বর"
+                      placeholder={t('phone_placeholder')}
                       className={`pl-10 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -223,7 +164,7 @@ export default function SignUpPage() {
 
                 <div>
                   <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                    পাসওয়ার্ড
+                    {t('password')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -232,7 +173,7 @@ export default function SignUpPage() {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="পাসওয়ার্ড দিন"
+                      placeholder={t('password_placeholder')}
                       className={`pl-10 pr-10 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -252,7 +193,7 @@ export default function SignUpPage() {
 
                 <div>
                   <Label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700">
-                    পাসওয়ার্ড নিশ্চিত করুন
+                    {t('confirm_password')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -261,7 +202,7 @@ export default function SignUpPage() {
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="পাসওয়ার্ড আবার দিন"
+                      placeholder={t('confirm_password_placeholder')}
                       className={`pl-10 pr-10 ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -289,15 +230,14 @@ export default function SignUpPage() {
                       className={errors.agreeTerms ? "border-red-500 text-red-500" : ""}
                     />
                     <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-700">
-                      আমি{" "}
+                      {t('ami')} {" "} {t('agree')} {" "}
                       <Link href="/terms" className="text-brand-600 hover:text-brand-500">
-                        শর্তাবলী
+                        {t('terms')}
                       </Link>{" "}
-                      এবং{" "}
+                      {t('and')} {" "}
                       <Link href="/privacy" className="text-brand-600 hover:text-brand-500">
-                        গোপনীয়তা নীতি
-                      </Link>{" "}
-                      গ্রহণ করছি
+                        {t('privacy')}
+                      </Link>
                     </label>
                   </div>
                   {errors.agreeTerms && <p className="mt-1 text-xs text-red-500">{errors.agreeTerms}</p>}
@@ -331,17 +271,17 @@ export default function SignUpPage() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        <span>প্রসেসিং...</span>
+                        <span>{t('processing')}</span>
                       </div>
                     ) : (
-                      "রেজিস্ট্রেশন করুন"
+                      t('register')
                     )}
                   </Button>
 
                   <div className="mt-6 text-center text-sm">
-                    <span className="text-gray-600">ইতিমধ্যে অ্যাকাউন্ট আছে?</span>{" "}
-                    <Link href="/signin" className="font-medium text-brand-600 hover:text-brand-500">
-                      সাইন ইন করুন
+                    <span className="text-gray-600">{t('already_have_account')}</span>{" "}
+                    <Link href={`/${currentLocale}/signin`} className="font-medium text-brand-600 hover:text-brand-500">
+                      {t('sign_in')}
                     </Link>
                   </div>
                 </div>

@@ -2,353 +2,218 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useLocale, useTranslations } from "next-intl"
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const locale = useLocale()
+  const t = useTranslations("header")
+
+  const categories = [
+    { id: 'fiction', label: 'উপন্যাস' },
+    { id: 'story', label: 'গল্প' },
+    { id: 'poetry', label: 'কবিতা' },
+    { id: 'history', label: 'ইতিহাস' },
+    { id: 'science', label: 'বিজ্ঞান' },
+    { id: 'religion', label: 'ধর্ম' },
+    { id: 'children', label: 'শিশু' },
+    { id: 'biography', label: 'জীবনী' }
+  ]
+
+  const specialLinks = [
+    { id: 'bestsellers', label: 'বেস্টসেলার বই' },
+    { id: 'new-arrivals', label: 'নতুন প্রকাশিত' },
+    { id: 'discounted', label: 'ছাড়ের বই' }
+  ]
+
+  const mainLinks = [
+    { href: '', label: 'home' },
+    { href: 'books', label: 'all_books' },
+    { href: 'authors', label: 'writers' },
+    { href: 'blog', label: 'blog' }
+  ]
+
+  const toggleDropdown = (dropdown: string) => {
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown)
+  }
 
   return (
-    <nav className="bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-md">
+    <nav className="bg-gradient-to-r from-brand-600 via-brand-500 to-brand-700 text-white shadow-lg">
       <div className="container mx-auto px-4">
+        {/* Mobile Menu */}
         <div className="flex items-center justify-between lg:hidden">
-          <Link href="/" className="py-3 text-sm font-medium hover:text-gray-200">
-            মূলপাতা
+          <Link href={`/${locale}`} className="py-4 text-lg font-semibold hover:text-brand-100 transition-colors">
+            {t("home")}
           </Link>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-brand-700">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-brand-500/20">
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle menu</span>
+                <span className="sr-only">{t("toggle_menu")}</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[80%] border-r-brand-200 bg-white p-0 sm:max-w-sm">
-              <div className="flex h-16 items-center border-b px-6">
-                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="mr-2">
+            <SheetContent side="left" className="w-[85%] border-r-brand-200 bg-white p-0 sm:max-w-sm">
+              <div className="flex h-16 items-center border-b px-6 bg-brand-50">
+                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="mr-2 hover:bg-brand-100">
                   <X className="h-5 w-5" />
-                  <span className="sr-only">Close menu</span>
+                  <span className="sr-only">{t("close_menu")}</span>
                 </Button>
-                <span className="text-lg font-bold">মেনু</span>
+                <span className="text-lg font-bold text-brand-700">{t("menu")}</span>
               </div>
               <div className="py-4">
                 <div className="space-y-1 px-6">
-                  <Link
-                    href="/"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    মূলপাতা
-                  </Link>
+                  {mainLinks.map(link => (
+                    <Link
+                      key={link.href}
+                      href={`/${locale}/${link.href}`}
+                      className="block rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {t(link.label)}
+                    </Link>
+                  ))}
+                  
                   <div className="py-1">
-                    <div className="flex items-center justify-between rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50">
-                      <span>সকল বই</span>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                    <div className="ml-4 space-y-1 border-l border-gray-200 pl-4">
-                      <Link
-                        href="/books/fiction"
-                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 hover:bg-brand-50 hover:text-gray-900"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        উপন্যাস
-                      </Link>
-                      <Link
-                        href="/books/story"
-                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 hover:bg-brand-50 hover:text-gray-900"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        গল্প
-                      </Link>
-                      <Link
-                        href="/books/poetry"
-                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 hover:bg-brand-50 hover:text-gray-900"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        কবিতা
-                      </Link>
-                    </div>
+                    <button
+                      onClick={() => toggleDropdown('categories')}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                    >
+                      <span>{t("categories")}</span>
+                      <ChevronDown className={`h-5 w-5 transform transition-transform ${activeDropdown === 'categories' ? 'rotate-180' : ''}`} />
+                    </button>
+                    {activeDropdown === 'categories' && (
+                      <div className="ml-4 space-y-1 border-l-2 border-brand-100 pl-4">
+                        {categories.map(category => (
+                          <Link
+                            key={category.id}
+                            href={`/${locale}/categories/${category.id}`}
+                            className="block rounded-lg px-4 py-2 text-base font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {t(category.label)}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <Link
-                    href="/special"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    স্পেশাল প্যাকেজ
-                  </Link>
-                  <Link
-                    href="/authors"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    লেখক
-                  </Link>
-                  <Link
-                    href="/categories"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    বিষয়
-                  </Link>
-                  <Link
-                    href="/blog"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    ব্লগ
-                  </Link>
-                  <Link
-                    href="/publishers"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    পাবলিশিং কোম্পানি
-                  </Link>
-                  <Link
-                    href="/offers"
-                    className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-brand-50"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    গার্ডিয়ান প্রতিনিধি
-                  </Link>
+
+                  <div className="py-1">
+                    <button
+                      onClick={() => toggleDropdown('special')}
+                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                    >
+                      <span>{t("special_package")}</span>
+                      <ChevronDown className={`h-5 w-5 transform transition-transform ${activeDropdown === 'special' ? 'rotate-180' : ''}`} />
+                    </button>
+                    {activeDropdown === 'special' && (
+                      <div className="ml-4 space-y-1 border-l-2 border-brand-100 pl-4">
+                        {specialLinks.map(link => (
+                          <Link
+                            key={link.id}
+                            href={`/${locale}/special/${link.id}`}
+                            className="block rounded-lg px-4 py-2 text-base font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {t(link.label)}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
         </div>
+        
 
+        {/* Desktop Menu */}
         <ul className="hidden flex-wrap items-center justify-between lg:flex">
-          <li className="py-3">
-            <Link href="/" className="text-sm font-medium transition-colors hover:text-brand-200">
-              মূলপাতা
-            </Link>
-          </li>
-          <li className="group relative py-3">
-            <Link
-              href="/books"
-              className="flex items-center text-sm font-medium transition-colors hover:text-brand-200"
+           <li className="py-4">
+              <Link 
+                href={`/${locale}`} 
+                className="text-base font-medium transition-colors hover:text-brand-100"
+              >
+                {t("home")}
+              </Link>
+            </li>
+
+            <li className="py-4">
+              <Link 
+                href={`/${locale}/books`} 
+                className="text-base font-medium transition-colors hover:text-brand-100"
+              >
+                {t("all_books")}
+              </Link>
+            </li>
+
+          {/* Categories Dropdown */}
+          <li className="group relative py-4">
+            <button
+              className="flex items-center text-base font-medium transition-colors hover:text-brand-100"
             >
-              <span>সকল বই</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[200px] animate-fadeIn rounded-md bg-white py-2 shadow-lg group-hover:block">
-              <Link
-                href="/books/fiction"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                উপন্যাস
-              </Link>
-              <Link
-                href="/books/story"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                গল্প
-              </Link>
-              <Link
-                href="/books/poetry"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                কবিতা
-              </Link>
-              <Link
-                href="/books/history"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                ইতিহাস
-              </Link>
-              <Link
-                href="/books/science"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                বিজ্ঞান
-              </Link>
+              <span>{t("categories")}</span>
+              <ChevronDown className="ml-1 h-4 w-4 transition-transform group-hover:rotate-180" />
+            </button>
+            <div className="invisible absolute left-0 top-full z-10 grid-cols-1 gap-2 rounded-lg bg-white p-4 shadow-xl opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-hover:translate-y-1 sm:grid sm:min-w-[400px] md:grid-cols-2">
+              {categories.map(category => (
+                <Link
+                  key={category.id}
+                  href={`/${locale}/categories/${category.id}`}
+                  className="block px-4 py-3 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600 whitespace-nowrap"
+                >
+                  {category.label}
+                </Link>
+              ))}
             </div>
           </li>
-          <li className="group relative py-3">
+          
+          <li className="group relative py-4">
             <Link
-              href="/special"
-              className="flex items-center text-sm font-medium transition-colors hover:text-brand-200"
+              href={`/${locale}/special`}
+              className="flex items-center text-base font-medium transition-colors hover:text-brand-100"
             >
-              <span>স্পেশাল প্যাকেজ</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              <span>{t("special_package")}</span>
+              <ChevronDown className="ml-1 h-4 w-4 transition-transform group-hover:rotate-180" />
             </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[200px] animate-fadeIn rounded-md bg-white py-2 shadow-lg group-hover:block">
-              <Link
-                href="/special/bestsellers"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                বেস্টসেলার বই
-              </Link>
-              <Link
-                href="/special/new-arrivals"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                নতুন প্রকাশিত
-              </Link>
-              <Link
-                href="/special/discounted"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                ছাড়ের বই
-              </Link>
+            <div className="absolute left-0 top-full z-10 hidden min-w-[220px] animate-fadeIn rounded-lg bg-white py-2 shadow-xl group-hover:block">
+              {specialLinks.map(link => (
+                <Link
+                  key={link.id}
+                  href={`/${locale}/special/${link.id}`}
+                  className="block px-4 py-3 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </li>
-          <li className="group relative py-3">
-            <Link
-              href="/authors"
-              className="flex items-center text-sm font-medium transition-colors hover:text-brand-200"
-            >
-              <span>লেখক</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[200px] animate-fadeIn rounded-md bg-white py-2 shadow-lg group-hover:block">
-              <Link
-                href="/authors/popular"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
+
+          
+
+            <li className="py-4">
+              <Link 
+                href={`/${locale}/authors`} 
+                className="text-base font-medium transition-colors hover:text-brand-100"
               >
-                জনপ্রিয় লেখক
+                {t("writers")}
               </Link>
-              <Link
-                href="/authors/award-winning"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
+            </li>
+
+            <li className="py-4">
+              <Link 
+                href={`/${locale}`} 
+                className="text-base font-medium transition-colors hover:text-brand-100"
               >
-                পুরস্কারপ্রাপ্ত লেখক
+                {t("blog")}
               </Link>
-              <Link
-                href="/authors/all"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                সকল লেখক
-              </Link>
-            </div>
-          </li>
-          <li className="group relative py-3">
-            <Link
-              href="/categories"
-              className="flex items-center text-sm font-medium transition-colors hover:text-brand-200"
-            >
-              <span>বিষয়</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute left-0 top-full z-10 hidden animate-fadeIn grid-cols-2 gap-2 rounded-md bg-white p-4 shadow-lg group-hover:grid sm:min-w-[400px]">
-              <Link
-                href="/categories/fiction"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                উপন্যাস
-              </Link>
-              <Link
-                href="/categories/story"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                গল্প
-              </Link>
-              <Link
-                href="/categories/poetry"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                কবিতা
-              </Link>
-              <Link
-                href="/categories/history"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                ইতিহাস
-              </Link>
-              <Link
-                href="/categories/science"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                বিজ্ঞান
-              </Link>
-              <Link
-                href="/categories/religion"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                ধর্ম
-              </Link>
-              <Link
-                href="/categories/children"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                শিশু
-              </Link>
-              <Link
-                href="/categories/biography"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                জীবনী
-              </Link>
-            </div>
-          </li>
-          <li className="group relative py-3">
-            <Link href="/blog" className="flex items-center text-sm font-medium transition-colors hover:text-brand-200">
-              <span>ব্লগ</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[200px] animate-fadeIn rounded-md bg-white py-2 shadow-lg group-hover:block">
-              <Link
-                href="/blog/book-reviews"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                বই রিভিউ
-              </Link>
-              <Link
-                href="/blog/author-interviews"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                লেখক সাক্ষাৎকার
-              </Link>
-              <Link
-                href="/blog/literary-news"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                সাহিত্য সংবাদ
-              </Link>
-            </div>
-          </li>
-          <li className="group relative py-3">
-            <Link
-              href="/publishers"
-              className="flex items-center text-sm font-medium transition-colors hover:text-brand-200"
-            >
-              <span>পাবলিশিং কোম্পানি</span>
-              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[200px] animate-fadeIn rounded-md bg-white py-2 shadow-lg group-hover:block">
-              <Link
-                href="/publishers/popular"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                জনপ্রিয় প্রকাশক
-              </Link>
-              <Link
-                href="/publishers/all"
-                className="block px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-              >
-                সকল প্রকাশক
-              </Link>
-            </div>
-          </li>
-          <li className="py-3">
-            <Link href="/offers" className="text-sm font-medium transition-colors hover:text-brand-200">
-              গার্ডিয়ান প্রতিনিধি
-            </Link>
-          </li>
+            </li>
+
+          
         </ul>
       </div>
     </nav>
