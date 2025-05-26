@@ -86,7 +86,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-gray-600">
-          <p>© {new Date().getFullYear()} Guardian Publications. {t('copyright')}</p>
+          <p>© {new Date().getFullYear()} Readers Publications. {t('copyright')}</p>
         </div>
       </div>
     </footer>

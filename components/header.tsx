@@ -135,12 +135,18 @@ export function Header({ isLoggedIn = false, userName = "" }: HeaderProps) {
             {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
               {isLoggedIn ? (
-                <>
-                  <span className="text-sm font-medium">{userName}</span>
-                  <Button variant="outline" size="sm" onClick={() => {}}>
-                    {t('logout')}
-                  </Button>
-                </>
+                <Link href={`/${currentLocale}/profile`} className="flex flex-col items-center text-sm font-medium hover:text-brand-700">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-50 overflow-hidden">
+                  <Image
+                    src="/profile-placeholder.png"
+                    alt={t('profile')}
+                    width={32}
+                    height={32}
+                    className="object-cover rounded-full"
+                  />
+                  </div>
+                  <span className="mt-1">{t('profile')}</span>
+                </Link>
               ) : (
                 <>
                   <Link href={`/${currentLocale}/signin`} className="text-sm font-medium text-gray-700 hover:text-gray-900">

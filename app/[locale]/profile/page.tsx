@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -203,27 +204,39 @@ export default function ProfilePage() {
 
               <h3 className="mb-4 mt-6 border-b border-gray-100 pb-2 text-lg font-semibold">অ্যাকাউন্ট</h3>
               <nav className="space-y-1">
-                <Link
-                  href="/profile/address"
-                  className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                <button
+                  onClick={() => setActiveTab("address")}
+                  className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
+                    activeTab === "address"
+                      ? "bg-brand-50 text-brand-600"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
                 >
                   <MapPin className="mr-3 h-5 w-5" />
                   <span>ঠিকানা</span>
-                </Link>
-                <Link
-                  href="/profile/payment"
-                  className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                </button>
+                <button
+                  onClick={() => setActiveTab("payment")}
+                  className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
+                    activeTab === "payment"
+                      ? "bg-brand-50 text-brand-600"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
                 >
                   <CreditCard className="mr-3 h-5 w-5" />
                   <span>পেমেন্ট মেথড</span>
-                </Link>
-                <Link
-                  href="/profile/notifications"
-                  className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                </button>
+                <button
+                  onClick={() => setActiveTab("notifications")}
+                  className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
+                    activeTab === "notifications"
+                      ? "bg-brand-50 text-brand-600"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
                 >
                   <BellIcon className="mr-3 h-5 w-5" />
                   <span>নোটিফিকেশন</span>
-                </Link>
+                </button>
                 <Link
                   href="/logout"
                   className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
@@ -551,6 +564,116 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+            {activeTab === "address" && (
+              <div className="rounded-xl bg-white p-6 shadow-lg">
+                <h2 className="mb-6 text-xl font-semibold">ঠিকানা সেটিংস</h2>
+                <p className="mb-4 text-gray-600">
+                  আপনার ডেলিভারি ঠিকানা আপডেট করুন। এটি আপনার অর্ডার ডেলিভারির জন্য ব্যবহৃত হবে।
+                </p>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">নতুন ঠিকানা</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-500 focus:ring-brand-500"
+                      placeholder="১২৩/এ, গ্রীন রোড, ঢাকা-১২১৫"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">পোস্টাল কোড</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-500 focus:ring-brand-500"
+                      placeholder="১২১৫"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <Button className="bg-brand-600 hover:bg-brand-700">ঠিকানা আপডেট করুন</Button>
+                </div>
+              </div>
+            )}
+            {activeTab === "payment" && (
+              <div className="rounded-xl bg-white p-6 shadow-lg">
+                <h2 className="mb-6 text-xl font-semibold">পেমেন্ট মেথড</h2>
+                <p className="mb-4 text-gray-600">
+                  আপনার পেমেন্ট মেথড আপডেট করুন। এটি আপনার অর্ডার পেমেন্টের জন্য ব্যবহৃত হবে।
+                </p>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">কার্ড নম্বর</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-500 focus:ring-brand-500"
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">কার্ডের নাম</label>
+                    <input
+                      type="text"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-500 focus:ring-brand-500"
+                      placeholder="আব্দুল করিম"
+                    />
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <Button className="bg-brand-600 hover:bg-brand-700">পেমেন্ট মেথড আপডেট করুন</Button>
+                </div>
+              </div>
+            )}
+            {activeTab === "notifications" && (
+                <div className="rounded-xl bg-white p-6 shadow-lg">
+                <h2 className="mb-6 text-xl font-semibold">নোটিফিকেশন সেটিংস</h2>
+                <p className="mb-4 text-gray-600">
+                  আপনার নোটিফিকেশন সেটিংস আপডেট করুন। আপনি কোন ধরনের নোটিফিকেশন পেতে চান তা নির্বাচন করুন।
+                </p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                  <span>অর্ডার আপডেট</span>
+                  <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                  <span>প্রোমোশনাল ইমেইল</span>
+                  <Switch />
+                  </div>
+                  <div className="flex items-center justify-between">
+                  <span>নতুন বইয়ের নোটিফিকেশন</span>
+                  <Switch defaultChecked />
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <h3 className="mb-4 text-lg font-medium">নোটিফিকেশন তালিকা</h3>
+                  <ul className="divide-y divide-gray-100">
+                  <li className="flex items-start gap-3 py-3">
+                    <BellIcon className="h-5 w-5 text-brand-500 mt-1" />
+                    <div>
+                    <p className="text-sm text-gray-800">আপনার অর্ডার <span className="font-semibold">ORD-12345</span> সফলভাবে ডেলিভারি হয়েছে।</p>
+                    <span className="text-xs text-gray-400">১ দিন আগে</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 py-3">
+                    <BellIcon className="h-5 w-5 text-brand-500 mt-1" />
+                    <div>
+                    <p className="text-sm text-gray-800">নতুন বই <span className="font-semibold">"নীল জোসনা"</span> এখন উপলব্ধ।</p>
+                    <span className="text-xs text-gray-400">২ দিন আগে</span>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3 py-3">
+                    <BellIcon className="h-5 w-5 text-brand-500 mt-1" />
+                    <div>
+                    <p className="text-sm text-gray-800">বিশেষ অফার: আজই অর্ডার করুন এবং ১০% ছাড় পান।</p>
+                    <span className="text-xs text-gray-400">৩ দিন আগে</span>
+                    </div>
+                  </li>
+                  </ul>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <Button className="bg-brand-600 hover:bg-brand-700">নোটিফিকেশন আপডেট করুন</Button>
+                </div>
+                </div>
+            )}
+            
           </div>
         </div>
       </div>

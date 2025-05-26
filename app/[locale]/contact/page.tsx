@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 export const metadata: Metadata = {
-  title: "Contact Us | Guardian Publications",
-  description: "Get in touch with Guardian Publications for inquiries, feedback, or support.",
+  title: "Contact Us | Readers Publications",
+  description: "Get in touch with Readers Publications for inquiries, feedback, or support.",
 }
 
 export default function ContactPage() {
@@ -48,9 +48,9 @@ export default function ContactPage() {
               <CardDescription>We aim to respond to all inquiries within 24 hours.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="font-medium">General Inquiries: info@guardianpubs.com</p>
-              <p className="font-medium">Customer Support: support@guardianpubs.com</p>
-              <p className="font-medium">Submissions: submissions@guardianpubs.com</p>
+              <p className="font-medium">General Inquiries: info@Readerspubs.com</p>
+              <p className="font-medium">Customer Support: support@Readerspubs.com</p>
+              <p className="font-medium">Submissions: submissions@Readerspubs.com</p>
             </CardContent>
           </Card>
 
@@ -163,7 +163,7 @@ const faqs = [
   {
     question: "How can I submit a manuscript for consideration?",
     answer:
-      "You can submit your manuscript by emailing submissions@guardianpubs.com with your complete manuscript, a synopsis, and your author bio. Our editorial team reviews all submissions and will contact you if interested.",
+      "You can submit your manuscript by emailing submissions@Readerspubs.com with your complete manuscript, a synopsis, and your author bio. Our editorial team reviews all submissions and will contact you if interested.",
   },
   {
     question: "Do you offer international shipping?",
@@ -173,7 +173,7 @@ const faqs = [
   {
     question: "How can I request a review copy of a book?",
     answer:
-      "Review copies are available for educators, librarians, and media professionals. Please email reviews@guardianpubs.com with your request, including your credentials and the title you're interested in.",
+      "Review copies are available for educators, librarians, and media professionals. Please email reviews@Readerspubs.com with your request, including your credentials and the title you're interested in.",
   },
   {
     question: "What is your return policy?",

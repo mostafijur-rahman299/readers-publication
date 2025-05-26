@@ -6,12 +6,15 @@ import { Menu, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useLocale, useTranslations } from "next-intl"
+import { useRouter, usePathname } from 'next/navigation';
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const locale = useLocale()
   const t = useTranslations("header")
+  const router = useRouter();
+  const pathname = usePathname();
+  const restOfPath = pathname.split('/').slice(2).join('/');
 
   const mainLinks = [
     { href: '', label: 'home' },
@@ -22,72 +25,86 @@ export function Navigation() {
     { href: 'about', label: 'about_us' }
   ]
 
-  const toggleDropdown = (dropdown: string) => {
-    setActiveDropdown(activeDropdown === dropdown ? null : dropdown)
-  }
+ const changeLanguage = (lang: string) => {
+    const newPath = `/${lang}/${restOfPath}`;
+    router.push(newPath);
+  };
 
   return (
     <nav className="bg-gradient-to-r from-brand-600 via-brand-500 to-brand-700 text-white shadow-lg">
       <div className="container mx-auto px-4">
         {/* Mobile Menu */}
-        <div className="flex items-center justify-between lg:hidden">
-          <Link href={`/${locale}`} className="py-4 text-lg font-semibold hover:text-brand-100 transition-colors">
-            {t("home")}
+        <div className="flex items-center justify-between py-4 lg:hidden">
+          {/* Logo / Home Link */}
+          <Link
+            href={`/${locale}`}
+            className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-brand-100"
+          >
+            <span>{t("home")}</span>
           </Link>
+
+          {/* Mobile Menu Button */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-brand-500/20">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">{t("toggle_menu")}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-brand-500/20 focus-visible:ring-2 focus-visible:ring-brand-200"
+                aria-label={t("toggle_menu")}
+              >
+                <Menu className="h-7 w-7" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[85%] border-r-brand-200 bg-white p-0 sm:max-w-sm">
-              <div className="flex h-16 items-center border-b px-6 bg-brand-50">
-                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="mr-2 hover:bg-brand-100">
+            <SheetContent
+              side="left"
+              className="w-[85%] max-w-xs border-r-0 bg-white p-0 shadow-lg"
+            >
+              {/* Sheet Header */}
+              <div className="flex h-16 items-center gap-2 border-b bg-brand-50 px-6">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="hover:bg-brand-100"
+                  aria-label={t("close_menu")}
+                >
                   <X className="h-5 w-5" />
-                  <span className="sr-only">{t("close_menu")}</span>
                 </Button>
                 <span className="text-lg font-bold text-brand-700">{t("menu")}</span>
               </div>
+              {/* Sheet Body */}
               <div className="py-4">
-                <div className="space-y-1 px-6">
+                <nav className="space-y-1 px-6">
                   {mainLinks.map(link => (
                     <Link
                       key={link.href}
                       href={`/${locale}/${link.href}`}
-                      className="block rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
+                      className="block rounded-lg px-4 py-3 text-base font-medium text-gray-900 transition-all hover:bg-brand-50 hover:text-brand-600"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {t(link.label)}
                     </Link>
                   ))}
-                  
-                  {/* <div className="py-1">
-                    <button
-                      onClick={() => toggleDropdown('categories')}
-                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
-                    >
-                      <span>{t("categories")}</span>
-                      <ChevronDown className={`h-5 w-5 transform transition-transform ${activeDropdown === 'categories' ? 'rotate-180' : ''}`} />
-                    </button>
-                    {activeDropdown === 'categories' && (
-                      <div className="ml-4 space-y-1 border-l-2 border-brand-100 pl-4">
-                        {categories.map(category => (
-                          <Link
-                            key={category.id}
-                            href={`/${locale}/categories/${category.id}`}
-                            className="block rounded-lg px-4 py-2 text-base font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-600 transition-all"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            {t(category.label)}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div> */}
+                </nav>
 
-                 
+                {/* Language Switcher */}
+                <div className="mt-8 flex items-center justify-center gap-3">
+                  <span className={`text-sm font-medium ${locale === "en" ? "text-brand-700" : "text-gray-400"}`}>En</span>
+                  <button
+                    type="button"
+                    aria-label="Switch language"
+                    className={`relative h-6 w-12 rounded-full transition-colors duration-200 ${locale === "en" ? "bg-brand-600" : "bg-brand-400"}`}
+                    onClick={() => changeLanguage(locale === "en" ? "bn" : "en")}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all duration-200 ${
+                        locale === "en" ? "left-1" : "left-6"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-medium ${locale === "bn" ? "text-brand-700" : "text-gray-400"}`}>বাংলা</span>
                 </div>
+
               </div>
             </SheetContent>
           </Sheet>

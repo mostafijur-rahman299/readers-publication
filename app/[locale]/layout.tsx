@@ -18,7 +18,7 @@ export async function generateStaticParams() {
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Guardian Publications",
+  title: "Readers Publications",
   description: "Quality books, journals, and educational materials for all ages",
   generator: 'v0.dev'
 }

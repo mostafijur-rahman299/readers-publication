@@ -24,7 +24,7 @@ export function MainNav() {
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
             <nav className="flex flex-col gap-4">
               <Link href="/" className="flex items-center gap-2 font-bold">
-                Guardian Publications
+                Readers Publications
               </Link>
               <Link href="/books" className="text-muted-foreground transition-colors hover:text-foreground">
                 Books
@@ -45,7 +45,7 @@ export function MainNav() {
           </SheetContent>
         </Sheet>
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="hidden font-bold sm:inline-block">Guardian Publications</span>
+          <span className="hidden font-bold sm:inline-block">Readers Publications</span>
         </Link>
         <nav className="hidden md:flex md:gap-6 lg:gap-10">
           <Link href="/books" className="text-sm font-medium transition-colors hover:text-foreground/80">

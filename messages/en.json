@@ -18,7 +18,8 @@
         "menu": "Menu",
         "toggle_menu": "Toggle Menu",
         "close_menu": "Close Menu",
-        "about_us": "About Us"
+        "about_us": "About Us",
+        "profile": "Profile"
     },
     "footer": {
         "about": "About",
