@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { Heart, ShoppingCart, Minus, Plus, Share2 } from "lucide-react"
@@ -5,9 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
+import { useParams } from "next/navigation"
 
-export default function BookDetailPage({ params }: { params: { id: string } }) {
-  const bookId = params.id
+export default function BookDetailPage() {
+  const { id } = useParams();
+  const bookId = id;
 
   return (
     <div className="min-h-screen bg-white">
@@ -91,8 +95,8 @@ export default function BookDetailPage({ params }: { params: { id: string } }) {
               </div>
 
               <div className="mb-6">
-                <span className="text-2xl font-bold text-teal-600">৳ {350 + Number.parseInt(bookId) * 10}</span>
-                <span className="ml-2 text-sm text-gray-500 line-through">৳ {400 + Number.parseInt(bookId) * 10}</span>
+                <span className="text-2xl font-bold text-teal-600">৳ {350 + Number.parseInt(bookId as string) * 10}</span>
+                <span className="ml-2 text-sm text-gray-500 line-through">৳ {400 + Number.parseInt(bookId as string) * 10}</span>
                 <span className="ml-2 rounded-full bg-teal-100 px-2 py-1 text-xs text-teal-800">১৫% ছাড়</span>
               </div>
 
@@ -239,22 +243,22 @@ export default function BookDetailPage({ params }: { params: { id: string } }) {
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {Array.from({ length: 6 }).map((_, index) => (
-              <Link key={index} href={`/books/${Number.parseInt(bookId) + index + 1}`} className="group">
+              <Link key={index} href={`/books/${Number.parseInt(bookId as string) + index + 1}`} className="group">
                 <div className="mb-3 overflow-hidden rounded-md border border-gray-200 bg-white">
                   <Image
-                    src={`/placeholder.svg?height=250&width=180&text=Book${Number.parseInt(bookId) + index + 1}`}
-                    alt={`Book ${Number.parseInt(bookId) + index + 1}`}
+                    src={`/placeholder.svg?height=250&width=180&text=Book${Number.parseInt(bookId as string) + index + 1}`}
+                    alt={`Book ${Number.parseInt(bookId as string) + index + 1}`}
                     width={180}
                     height={250}
                     className="h-auto w-full transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
                 <h3 className="text-sm font-medium group-hover:text-teal-600">
-                  বইয়ের শিরোনাম {Number.parseInt(bookId) + index + 1}
+                  বইয়ের শিরোনাম {Number.parseInt(bookId as string) + index + 1}
                 </h3>
                 <p className="text-xs text-gray-600">লেখক নাম</p>
                 <p className="mt-1 text-sm font-semibold text-teal-600">
-                  ৳ {350 + (Number.parseInt(bookId) + index) * 10}
+                  ৳{350 + (Number.parseInt(bookId as string) + index) * 10}
                 </p>
               </Link>
             ))}

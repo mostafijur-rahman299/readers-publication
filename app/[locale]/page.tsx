@@ -43,7 +43,7 @@ export default function Home() {
               <MainCarousel />
             </div>
             <div className="space-y-6">
-              <div className="group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg">
+              <div className="group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg h-[187px]">
                 <Image
                   src="/placeholder.svg?height=200&width=400"
                   alt="Advertisement"
@@ -52,7 +52,7 @@ export default function Home() {
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <div className="group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg">
+              <div className="group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg h-[187px]">
                 <Image
                   src="/placeholder.svg?height=200&width=400"
                   alt="Advertisement"
@@ -70,10 +70,35 @@ export default function Home() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">শীঘ্রই আসছে...</h2>
-            <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+            <h2 className="text-2xl font-bold text-gray-900">নতুন প্রকাশিত বই</h2>
+            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
               সব দেখুন →
-            </Link>
+            </Link> */}
+          </div>
+          <NewsGrid />
+          <NewsGrid />
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">জনপ্রিয় বই</h2>
+            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              সব দেখুন →
+            </Link> */}
+          </div>
+          <NewsGrid />
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">শীঘ্রই আসছে...</h2>
+            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              সব দেখুন →
+            </Link> */}
           </div>
           <NewsGrid />
         </div>
@@ -181,35 +206,6 @@ export default function Home() {
             >
               সকল লেখক দেখুন
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter section */}
-      <section className="bg-brand-600 py-12 text-white">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-bold">আমাদের নিউজলেটার সাবস্ক্রাইব করুন</h2>
-            <p className="mt-2 text-brand-100">নতুন বই, অফার এবং ইভেন্ট সম্পর্কে সর্বশেষ আপডেট পেতে সাবস্ক্রাইব করুন</p>
-
-            <div className="mt-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-              <input
-                type="email"
-                placeholder="আপনার ইমেইল দিন"
-                className="flex-1 rounded-md border-0 px-4 py-2 text-gray-900 focus:ring-2 focus:ring-brand-300"
-              />
-              <button className="rounded-md bg-white px-6 py-2 font-medium text-brand-600 shadow-sm transition-colors hover:bg-gray-100">
-                সাবস্ক্রাইব করুন
-              </button>
-            </div>
-
-            <p className="mt-4 text-xs text-brand-100">
-              সাবস্ক্রাইব করে আপনি আমাদের{" "}
-              <Link href="/privacy" className="underline hover:text-white">
-                গোপনীয়তা নীতি
-              </Link>{" "}
-              মেনে নিচ্ছেন
-            </p>
           </div>
         </div>
       </section>

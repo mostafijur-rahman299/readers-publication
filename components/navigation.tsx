@@ -13,28 +13,13 @@ export function Navigation() {
   const locale = useLocale()
   const t = useTranslations("header")
 
-  const categories = [
-    { id: 'fiction', label: 'উপন্যাস' },
-    { id: 'story', label: 'গল্প' },
-    { id: 'poetry', label: 'কবিতা' },
-    { id: 'history', label: 'ইতিহাস' },
-    { id: 'science', label: 'বিজ্ঞান' },
-    { id: 'religion', label: 'ধর্ম' },
-    { id: 'children', label: 'শিশু' },
-    { id: 'biography', label: 'জীবনী' }
-  ]
-
-  const specialLinks = [
-    { id: 'bestsellers', label: 'বেস্টসেলার বই' },
-    { id: 'new-arrivals', label: 'নতুন প্রকাশিত' },
-    { id: 'discounted', label: 'ছাড়ের বই' }
-  ]
-
   const mainLinks = [
     { href: '', label: 'home' },
     { href: 'books', label: 'all_books' },
+    { href: 'special-package', label: 'special_package' },
     { href: 'authors', label: 'writers' },
-    { href: 'blog', label: 'blog' }
+    { href: 'blog', label: 'blog' },
+    { href: 'about', label: 'about_us' }
   ]
 
   const toggleDropdown = (dropdown: string) => {
@@ -77,7 +62,7 @@ export function Navigation() {
                     </Link>
                   ))}
                   
-                  <div className="py-1">
+                  {/* <div className="py-1">
                     <button
                       onClick={() => toggleDropdown('categories')}
                       className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
@@ -99,31 +84,9 @@ export function Navigation() {
                         ))}
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
-                  <div className="py-1">
-                    <button
-                      onClick={() => toggleDropdown('special')}
-                      className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-base font-medium text-gray-900 hover:bg-brand-50 hover:text-brand-600 transition-all"
-                    >
-                      <span>{t("special_package")}</span>
-                      <ChevronDown className={`h-5 w-5 transform transition-transform ${activeDropdown === 'special' ? 'rotate-180' : ''}`} />
-                    </button>
-                    {activeDropdown === 'special' && (
-                      <div className="ml-4 space-y-1 border-l-2 border-brand-100 pl-4">
-                        {specialLinks.map(link => (
-                          <Link
-                            key={link.id}
-                            href={`/${locale}/special/${link.id}`}
-                            className="block rounded-lg px-4 py-2 text-base font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-600 transition-all"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            {t(link.label)}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                 
                 </div>
               </div>
             </SheetContent>
@@ -152,7 +115,7 @@ export function Navigation() {
             </li>
 
           {/* Categories Dropdown */}
-          <li className="group relative py-4">
+          {/* <li className="group relative py-4">
             <button
               className="flex items-center text-base font-medium transition-colors hover:text-brand-100"
             >
@@ -170,31 +133,17 @@ export function Navigation() {
                 </Link>
               ))}
             </div>
-          </li>
+          </li> */}
           
           <li className="group relative py-4">
             <Link
-              href={`/${locale}/special`}
+              href={`/${locale}/special-package`}
               className="flex items-center text-base font-medium transition-colors hover:text-brand-100"
             >
               <span>{t("special_package")}</span>
-              <ChevronDown className="ml-1 h-4 w-4 transition-transform group-hover:rotate-180" />
             </Link>
-            <div className="absolute left-0 top-full z-10 hidden min-w-[220px] animate-fadeIn rounded-lg bg-white py-2 shadow-xl group-hover:block">
-              {specialLinks.map(link => (
-                <Link
-                  key={link.id}
-                  href={`/${locale}/special/${link.id}`}
-                  className="block px-4 py-3 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+            
           </li>
-
-          
-
             <li className="py-4">
               <Link 
                 href={`/${locale}/authors`} 
@@ -206,10 +155,19 @@ export function Navigation() {
 
             <li className="py-4">
               <Link 
-                href={`/${locale}`} 
+                href={`/${locale}/blog`} 
                 className="text-base font-medium transition-colors hover:text-brand-100"
               >
                 {t("blog")}
+              </Link>
+            </li>
+
+             <li className="py-4">
+              <Link 
+                href={`/${locale}/about`} 
+                className="text-base font-medium transition-colors hover:text-brand-100"
+              >
+                {t("about_us")}
               </Link>
             </li>
 

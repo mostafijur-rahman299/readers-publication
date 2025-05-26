@@ -17,7 +17,8 @@
         "blog": "Blog",
         "menu": "Menu",
         "toggle_menu": "Toggle Menu",
-        "close_menu": "Close Menu"
+        "close_menu": "Close Menu",
+        "about_us": "About Us"
     },
     "footer": {
         "about": "About",
@@ -171,5 +172,13 @@
     "authors": {
         "title": "Our Authors",
         "description": "Discover talented writers and their amazing works"
+    },
+    "special_package": {
+        "title": "Special Package",
+        "description": "Exclusive offers and discounts on selected books."
+    },
+    "about_us": {
+        "title": "About Us",
+        "subtitle": "Learn more about our mission, vision, and values."
     }
 }
