@@ -188,5 +188,9 @@
     "about_us": {
         "title": "About Us",
         "subtitle": "Learn more about our mission, vision, and values."
+    },
+    "privacy": {
+        "title": "Privacy Policy",
+        "description": "Read our privacy policy. We do not collect your information, but we share it with you so that we can help you solve your problem."
     }
 }

@@ -16,6 +16,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import useHttp from "@/hooks/useHttp"
 import { Alert } from "@/components/ui/alert"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useGoogleLogin } from "@react-oauth/google"
 
 export default function SignUpPage() {
   const t = useTranslations('signup');
@@ -34,9 +35,10 @@ export default function SignUpPage() {
     password?: string
     confirm_password?: string
     agreeTerms?: string
-    general?: string
+    non_field_errors?: string
   }>({})
   const {sendRequests: sendSignUpRequest, isLoading: isSignUpLoading} = useHttp()
+  const {sendRequests: sendGoogleLoginRequest, isLoading: isGoogleLoginLoading, error: googleLoginError} = useHttp()
   const [successMessage, setSuccessMessage] = useState<string>("")
 
   const currentLocale = useLocale()
@@ -73,7 +75,7 @@ export default function SignUpPage() {
     }
 
     if(password !== confirmPassword) {
-      setErrors((prev) => ({ ...prev, confirmPassword: t('password_not_match') }))
+      setErrors((prev) => ({ ...prev, confirm_password: t('password_not_match') }))
       isValid = false
     }
 
@@ -107,6 +109,26 @@ export default function SignUpPage() {
     }
   }
 
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      sendGoogleLoginRequest({
+        url_info: {
+          url: API_ENDPOINTS.GOOGLE_LOGIN,
+          is_auth_required: false,
+        },
+        method: "POST",
+        data: {
+          access_token: tokenResponse.access_token,
+        }
+      }, (data: any) => {
+        console.log("data=======", data)
+      })
+    },
+    onError: () => {
+      console.error("Google Login Failed");
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -125,17 +147,22 @@ export default function SignUpPage() {
             <div className="p-8">
               <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
 
+              {googleLoginError?.non_field_errors && <div className="md:col-span-2">
+                    <Alert variant="destructive" className="w-full mb-4">{googleLoginError?.non_field_errors}</Alert>
+                  </div>}
                 <div className="md:col-span-2">
+                  
                   <div className="mb-6 flex items-center justify-center space-x-4">
                     <button
                       type="button"
                       className="btn-hover-effect flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                      disabled={isSignUpLoading}
+                      disabled={isSignUpLoading || isGoogleLoginLoading}
+                      onClick={() => login()}
                     >
                       <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
                       </svg>
-                      <span>{t('register_with_google')}</span>
+                      {isGoogleLoginLoading ? <span>Processing...</span> : <span>{t('register_with_google')}</span>}
                     </button>
                   </div>
 
@@ -143,8 +170,8 @@ export default function SignUpPage() {
                     <span>{t('register_with_email')}</span>
                   </div>
                 </div>
-                {errors.general && <div className="md:col-span-2">
-                  <Alert variant="destructive" className="w-full mb-4">{errors.general}</Alert>
+                {errors.non_field_errors && <div className="md:col-span-2">
+                  <Alert variant="destructive" className="w-full mb-4">{errors.non_field_errors}</Alert>
                 </div>}
                 {successMessage && <div className="md:col-span-2">
                   <Alert variant="success" className="w-full mb-4 text-center">{successMessage}</Alert>
