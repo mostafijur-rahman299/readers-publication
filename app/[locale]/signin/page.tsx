@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
 import useHttp from "@/hooks/useHttp"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useGoogleLogin } from "@react-oauth/google"
+import { Alert } from "@/components/ui/alert"
 
 export default function SignInPage() {
   const t = useTranslations('signin');
@@ -23,9 +25,11 @@ export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   // const [rememberMe, setRememberMe] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; non_field_errors?: string }>({})
+  const [successMessage, setSuccessMessage] = useState<string>("")
   const router = useRouter()
-  const { sendRequests, isLoading, error } = useHttp()
+  const { sendRequests, isLoading } = useHttp()
+  const { sendRequests: sendGoogleLoginRequest, isLoading: isGoogleLoginLoading, error: googleLoginError } = useHttp()
 
   const currentLocale = useLocale()
 
@@ -61,11 +65,35 @@ export default function SignInPage() {
         },
         method: "POST",
         data: { email, password },
-      }, (response) => {
-        console.log(response)
+      }, (response: any) => {
+        setSuccessMessage(t('success_message'))
+      }, (err: any) => {
+        setErrors(err)
       })
     }
   }
+
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      sendGoogleLoginRequest({
+        url_info: {
+          url: API_ENDPOINTS.GOOGLE_LOGIN,
+          is_auth_required: false,
+        },
+        method: "POST",
+        data: {
+          access_token: tokenResponse.access_token,
+        }
+      }, (data: any) => {
+        console.log("data=======", data)
+      })
+    },
+    onError: () => {
+      console.error("Google Login Failed");
+    },
+  });
+
+  console.log(errors)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,6 +122,20 @@ export default function SignInPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {errors?.detail && <div className="md:col-span-2">
+                    <Alert variant="destructive" className="w-full mb-4">{errors?.detail}</Alert>
+                  </div>}
+
+                {errors.non_field_errors && <div className="md:col-span-2">
+                  <Alert variant="destructive" className="w-full mb-4">{errors.non_field_errors}</Alert>
+                </div>}
+                {successMessage && <div className="md:col-span-2">
+                  <Alert variant="success" className="w-full mb-4 text-center">{successMessage}</Alert>
+                </div>}
+                {googleLoginError?.non_field_errors && <div className="md:col-span-2">
+                    <Alert variant="destructive" className="w-full mb-4">{googleLoginError?.non_field_errors}</Alert>
+                  </div>}
+
                 <div>
                   <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
                     {t('email')}
@@ -109,7 +151,7 @@ export default function SignInPage() {
                       className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isGoogleLoginLoading || isLoading}
                     />
                   </div>
                   {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -135,13 +177,13 @@ export default function SignInPage() {
                       className={`pl-10 pr-10 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
+                      disabled={isGoogleLoginLoading || isLoading}
+                      />
                     <button
                       type="button"
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                       onClick={togglePasswordVisibility}
-                      disabled={isLoading}
+                      disabled={isGoogleLoginLoading || isLoading}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -164,9 +206,9 @@ export default function SignInPage() {
                 <Button
                   type="submit"
                   className="w-full bg-brand-600 hover:bg-brand-700 transition-colors"
-                  disabled={isLoading}
+                  disabled={isGoogleLoginLoading || isLoading}
                 >
-                  {isLoading ? (
+                  {isGoogleLoginLoading ? (
                     <div className="flex items-center">
                       <svg
                         className="mr-2 h-4 w-4 animate-spin text-white"
@@ -212,12 +254,13 @@ export default function SignInPage() {
                   <button
                     type="button"
                     className="btn-hover-effect flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                    disabled={isLoading}
+                    disabled={isGoogleLoginLoading || isLoading}
+                    onClick={() => login()}
                   >
                     <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
                     </svg>
-                    <span>{t('sign_in_with_google')}</span>
+                    {isGoogleLoginLoading ? <span>Processing...</span> : <span>{t('sign_in_with_google')}</span>}
                   </button>
                 </div>
               </div>

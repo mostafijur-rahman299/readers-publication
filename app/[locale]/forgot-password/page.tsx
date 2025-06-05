@@ -5,11 +5,10 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useRouter } from "next/navigation"
@@ -80,7 +79,7 @@ export default function SignInPage() {
             <div className="relative h-32 bg-gradient-to-r from-brand-600 to-brand-700">
               <div className="absolute -bottom-12 left-1/2 h-24 w-24 -translate-x-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-md">
                 <Image
-                  src="/placeholder.svg?height=96&width=96"
+                  src="/readers-icon.png"
                   alt="User"
                   width={96}
                   height={96}
