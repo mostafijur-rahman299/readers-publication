@@ -42,6 +42,8 @@ export default function Home() {
             <div className="md:col-span-2">
               <MainCarousel />
             </div>
+
+            {/* Advertisement section */}
             <div className="space-y-6">
               <div className="group overflow-hidden rounded-lg shadow-md transition-all hover:shadow-lg h-[187px]">
                 <Image

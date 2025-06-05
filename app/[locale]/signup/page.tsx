@@ -13,6 +13,9 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
+import useHttp from "@/hooks/useHttp"
+import { Alert } from "@/components/ui/alert"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
 
 export default function SignUpPage() {
   const t = useTranslations('signup');
@@ -24,16 +27,17 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [agreeTerms, setAgreeTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{
-    name?: string
+    full_name?: string
     email?: string
-    phone?: string
+    phone_number?: string
     password?: string
-    confirmPassword?: string
+    confirm_password?: string
     agreeTerms?: string
+    general?: string
   }>({})
-  const router = useRouter()
+  const {sendRequests: sendSignUpRequest, isLoading: isSignUpLoading} = useHttp()
+  const [successMessage, setSuccessMessage] = useState<string>("")
 
   const currentLocale = useLocale()
 
@@ -46,21 +50,61 @@ export default function SignUpPage() {
   }
 
   const validateForm = () => {
-    
+    let isValid = true
+    if (!name) {
+      setErrors((prev) => ({ ...prev, full_name: t('name_required') }))
+      isValid = false
+    }
+    if (!email) {
+      setErrors((prev) => ({ ...prev, email: t('email_required') }))
+      isValid = false
+    }
+    if (!password) {
+      setErrors((prev) => ({ ...prev, password: t('password_required') }))
+      isValid = false
+    }
+    if (!confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirm_password: t('confirm_password_required') }))
+      isValid = false
+    }
+    if (!agreeTerms) {
+      setErrors((prev) => ({ ...prev, agreeTerms: t('agree_terms_required') }))
+      isValid = false
+    }
+
+    if(password !== confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirmPassword: t('password_not_match') }))
+      isValid = false
+    }
+
+    return isValid
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    // e.preventDefault()
-    // if (validateForm()) {
-    //   setIsLoading(true)
+    e.preventDefault()
+    setErrors({})
+    setSuccessMessage("")
+    if (validateForm()) {
 
-    //   // Simulate API call
-    //   setTimeout(() => {
-    //     console.log("Form submitted:", { name, email, phone, password, agreeTerms })
-    //     setIsLoading(false)
-    //     router.push("/signin")
-    //   }, 1500)
-    // }
+      const response = (data: any) => {
+        setSuccessMessage(t('success_message'))
+      }
+
+      sendSignUpRequest(
+        {
+          url_info: {
+            url: API_ENDPOINTS.SIGNUP,
+            is_auth_required: false,
+          },
+          method: "POST",
+          data: {
+            full_name: name, email, phone_number: phone, password, confirm_password: confirmPassword, terms_and_conditions: agreeTerms
+          }
+        }
+      , response, (err: any) => {
+        setErrors(err)
+      })
+    }
   }
 
   return (
@@ -80,12 +124,13 @@ export default function SignUpPage() {
 
             <div className="p-8">
               <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
+
                 <div className="md:col-span-2">
                   <div className="mb-6 flex items-center justify-center space-x-4">
                     <button
                       type="button"
                       className="btn-hover-effect flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     >
                       <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
@@ -98,10 +143,16 @@ export default function SignUpPage() {
                     <span>{t('register_with_email')}</span>
                   </div>
                 </div>
+                {errors.general && <div className="md:col-span-2">
+                  <Alert variant="destructive" className="w-full mb-4">{errors.general}</Alert>
+                </div>}
+                {successMessage && <div className="md:col-span-2">
+                  <Alert variant="success" className="w-full mb-4 text-center">{successMessage}</Alert>
+                </div>}
 
                 <div>
                   <Label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('name')}
+                    {t('name')} *
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -111,18 +162,18 @@ export default function SignUpPage() {
                       id="name"
                       type="text"
                       placeholder={t('name_placeholder')}
-                      className={`pl-10 ${errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                      className={`pl-10 ${errors.full_name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     />
                   </div>
-                  {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+                  {errors.full_name && <p className="mt-1 text-xs text-red-500">{errors.full_name}</p>}
                 </div>
 
                 <div>
                   <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('email')}
+                    {t('email')} *
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -135,7 +186,7 @@ export default function SignUpPage() {
                       className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     />
                   </div>
                   {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -152,19 +203,19 @@ export default function SignUpPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder={t('phone_placeholder')}
-                      className={`pl-10 ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                      placeholder={"e.g. 017XXXXXXXX"}
+                      className={`pl-10 ${errors.phone_number ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     />
                   </div>
-                  {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
+                  {errors.phone_number && <p className="mt-1 text-xs text-red-500">{errors.phone_number}</p>}
                 </div>
 
                 <div>
                   <Label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('password')}
+                    {t('password')} *
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -177,13 +228,13 @@ export default function SignUpPage() {
                       className={`pl-10 pr-10 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     />
                     <button
                       type="button"
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                       onClick={togglePasswordVisibility}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -193,7 +244,7 @@ export default function SignUpPage() {
 
                 <div>
                   <Label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('confirm_password')}
+                    {t('confirm_password')} *
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -203,21 +254,21 @@ export default function SignUpPage() {
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder={t('confirm_password_placeholder')}
-                      className={`pl-10 pr-10 ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                      className={`pl-10 pr-10 ${errors.confirm_password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     />
                     <button
                       type="button"
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                       onClick={toggleConfirmPasswordVisibility}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                     >
                       {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
-                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
+                  {errors.confirm_password && <p className="mt-1 text-xs text-red-500">{errors.confirm_password}</p>}
                 </div>
 
                 <div className="md:col-span-2">
@@ -226,7 +277,7 @@ export default function SignUpPage() {
                       id="agree-terms"
                       checked={agreeTerms}
                       onCheckedChange={(checked) => setAgreeTerms(checked as boolean)}
-                      disabled={isLoading}
+                      disabled={isSignUpLoading}
                       className={errors.agreeTerms ? "border-red-500 text-red-500" : ""}
                     />
                     <label htmlFor="agree-terms" className="ml-2 block text-sm text-gray-700">
@@ -247,9 +298,9 @@ export default function SignUpPage() {
                   <Button
                     type="submit"
                     className="w-full bg-brand-600 hover:bg-brand-700 transition-colors"
-                    disabled={isLoading}
+                    disabled={isSignUpLoading}
                   >
-                    {isLoading ? (
+                    {isSignUpLoading ? (
                       <div className="flex items-center">
                         <svg
                           className="mr-2 h-4 w-4 animate-spin text-white"

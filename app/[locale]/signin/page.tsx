@@ -14,16 +14,18 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
 
 export default function SignInPage() {
   const t = useTranslations('signin');
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
+  // const [rememberMe, setRememberMe] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { sendRequests, isLoading, error } = useHttp()
 
   const currentLocale = useLocale()
 
@@ -36,18 +38,11 @@ export default function SignInPage() {
     let isValid = true
 
     if (!email) {
-      newErrors.email = "ইমেইল আবশ্যক"
-      isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "সঠিক ইমেইল দিন"
+      newErrors.email = currentLocale === "bn" ? "ইমেইল আবশ্যক" : "Email is required"
       isValid = false
     }
-
     if (!password) {
-      newErrors.password = "পাসওয়ার্ড আবশ্যক"
-      isValid = false
-    } else if (password.length < 6) {
-      newErrors.password = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"
+      newErrors.password = currentLocale === "bn" ? "পাসওয়ার্ড আবশ্যক" : "Password is required"
       isValid = false
     }
 
@@ -58,14 +53,17 @@ export default function SignInPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
-      setIsLoading(true)
 
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", { email, password, rememberMe })
-        setIsLoading(false)
-        router.push("/")
-      }, 1500)
+      sendRequests({
+        url_info: {
+          url: API_ENDPOINTS.LOGIN,
+          is_auth_required: false,
+        },
+        method: "POST",
+        data: { email, password },
+      }, (response) => {
+        console.log(response)
+      })
     }
   }
 
@@ -80,7 +78,7 @@ export default function SignInPage() {
             <div className="relative h-32 bg-gradient-to-r from-brand-600 to-brand-700">
               <div className="absolute -bottom-12 left-1/2 h-24 w-24 -translate-x-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-md">
                 <Image
-                  src="/placeholder.svg?height=96&width=96"
+                  src="/readers-icon.png"
                   alt="User"
                   width={96}
                   height={96}
@@ -151,7 +149,7 @@ export default function SignInPage() {
                   {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
                 </div>
 
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <Checkbox
                     id="remember-me"
                     checked={rememberMe}
@@ -161,7 +159,7 @@ export default function SignInPage() {
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                     {t('remember_me')}
                   </label>
-                </div>
+                </div> */}
 
                 <Button
                   type="submit"

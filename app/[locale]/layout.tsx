@@ -41,6 +41,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className="light" style={{ colorScheme: "light" }}>
+      <head> 
+        <link rel="icon" href="/readers-icon.png" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <NextIntlClientProvider messages={messages} locale={locale}>

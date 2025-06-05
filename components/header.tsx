@@ -59,7 +59,7 @@ export function Header({ isLoggedIn = false, userName = "" }: HeaderProps) {
           <div className="hidden md:flex items-center">
             <Link href="/" className="transition-transform hover:scale-105">
               <div className="relative h-12 w-32">
-                <Image src="/logo.png" alt="Logo" fill className="object-contain" priority />
+                <Image src="/readers-icon.png" alt="Logo" fill className="object-contain" priority />
               </div>
             </Link>
           </div>
@@ -149,11 +149,8 @@ export function Header({ isLoggedIn = false, userName = "" }: HeaderProps) {
                 </Link>
               ) : (
                 <>
-                  <Link href={`/${currentLocale}/signin`} className="text-sm font-medium text-gray-700 hover:text-gray-900">
-                    {t('signIn')}
-                  </Link>
-                  <Link href={`/${currentLocale}/signup`}>
-                    <Button size="sm">{t('signUp')}</Button>
+                  <Link href={`/${currentLocale}/signin`}>
+                    <Button size="sm">{t('signIn')}</Button>
                   </Link>
                 </>
               )}

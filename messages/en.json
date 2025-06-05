@@ -59,7 +59,14 @@
         "and": "and",
         "processing": "Processing...",
         "already_have_account": "Already have an account?",
-        "sign_in": "Sign In"
+        "sign_in": "Sign In",
+        "name_required": "Name is required",
+        "email_required": "Email is required",
+        "password_required": "Password is required",
+        "confirm_password_required": "Confirm password is required",
+        "agree_terms_required": "You must agree to the terms and privacy policy",
+        "password_not_match": "Password does not match",
+        "success_message": "Thank you! Your account has been created successfully."
     },
     "signin": {
         "title": "Sign In",

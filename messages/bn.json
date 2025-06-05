@@ -59,7 +59,14 @@
         "and": "এবং",
         "processing": "প্রসেসিং...",
         "already_have_account": "ইতিমধ্যে অ্যাকাউন্ট আছে?",
-        "sign_in": "সাইন ইন করুন"
+        "sign_in": "সাইন ইন করুন",
+        "name_required": "নাম আবশ্যক",
+        "email_required": "ইমেইল আবশ্যক",
+        "password_required": "পাসওয়ার্ড আবশ্যক",
+        "confirm_password_required": "পাসওয়ার্ড নিশ্চিত করুন আবশ্যক",
+        "agree_terms_required": "শর্তাবলী এবং গোপনীয়তা নীতি গ্রহণ করুন আবশ্যক",
+        "password_not_match": "পাসওয়ার্ড মিলছে না",
+        "success_message": "ধন্যবাদ! আপনার অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে।"
     },
     "signin": {
         "title": "সাইন ইন করুন",
