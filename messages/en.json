@@ -83,7 +83,8 @@
         "dont_have_account": "Don't have an account?",
         "sign_up": "Sign Up",
         "or_via": "Or via",
-        "forgot_password": "Forgot password?"
+        "forgot_password": "Forgot password?",
+        "success_message": "Thank you! Your sign in has been successful."
     },
     "forgot_password": {
         "title": "Forgot Password",
@@ -93,7 +94,8 @@
         "want_to_sign_in": "Want to sign in?",
         "sign_in": "Sign In",
         "email": "Email",
-        "email_placeholder": "Enter your email"
+        "email_or_phone": "Email or Phone",
+        "email_or_phone_placeholder": "Enter your email or phone number"
     },
     "update_password": {
         "title": "Update Password",

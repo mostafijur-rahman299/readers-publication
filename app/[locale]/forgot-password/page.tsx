@@ -96,17 +96,17 @@ export default function SignInPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <Label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('email')}
+                  <Label htmlFor="email_or_phone" className="mb-1 block text-sm font-medium text-gray-700">
+                    {t('email_or_phone')}
                   </Label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                       <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder={t('email_placeholder')}
+                      id="email_or_phone"
+                      type="text"
+                      placeholder={"017XXXXXXXX"}
                       className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

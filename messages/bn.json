@@ -83,7 +83,8 @@
         "sign_up": "সাইন আপ করুন",
         "or_via": "অথবা এর মাধ্যমে চালিয়ে যান",
         "sign_in_with_google": "গুগল দিয়ে সাইন ইন করুন",
-        "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?"
+        "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?",
+        "success_message": "ধন্যবাদ! আপনার সাইন ইন সফলভাবে করা হয়েছে।"
     },
     "forgot_password": {
         "title": "পাসওয়ার্ড ভুলে গেছেন?",
@@ -93,7 +94,8 @@
         "want_to_sign_in": "সাইন ইন করতে চান?",
         "sign_in": "সাইন ইন করুন",
         "email": "ইমেইল",
-        "email_placeholder": "আপনার ইমেইল দিন"
+        "email_or_phone": "ইমেইল বা ফোন নম্বর",
+        "email_or_phone_placeholder": "আপনার ইমেইল বা ফোন নম্বর দিন"
     },
     "update_password": {
         "title": "পাসওয়ার্ড আপডেট করুন",
