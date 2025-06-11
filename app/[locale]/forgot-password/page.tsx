@@ -11,42 +11,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
-import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
+import useHttp from "@/hooks/useHttp";
+import { API_ENDPOINTS } from "@/constants/apiEnds";
+import { Alert } from "@/components/ui/alert"
 
 export default function SignInPage() {
   const t = useTranslations('forgot_password');
-  const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [errors, setErrors] = useState<{ email_or_phone?: string; non_field_errors?: string }>({})
+  const {sendRequests: sendForgotPasswordRequest, isLoading} = useHttp()
+  const [successMessage, setSuccessMessage] = useState("")
 
   const currentLocale = useLocale()
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
-
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { email_or_phone?: string; detail?: string } = {}
     let isValid = true
 
     if (!email) {
-      newErrors.email = "ইমেইল আবশ্যক"
-      isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "সঠিক ইমেইল দিন"
-      isValid = false
-    }
-
-    if (!password) {
-      newErrors.password = "পাসওয়ার্ড আবশ্যক"
-      isValid = false
-    } else if (password.length < 6) {
-      newErrors.password = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"
+      newErrors.email_or_phone = t('email_required')
       isValid = false
     }
 
@@ -55,16 +39,24 @@ export default function SignInPage() {
   }
 
   const handleSubmit = (e: React.FormEvent) => {
+    setErrors({})
+    setSuccessMessage("")
     e.preventDefault()
     if (validateForm()) {
-      setIsLoading(true)
-
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", { email, password, rememberMe })
-        setIsLoading(false)
-        router.push("/")
-      }, 1500)
+      sendForgotPasswordRequest({
+        url_info: {
+          url: API_ENDPOINTS.FORGOT_PASSWORD,
+          is_auth_required: false,
+        },
+        method: "POST",
+        data: {
+          email_or_phone: email
+        }
+      }, (response: any) => {
+        setSuccessMessage(t('success_message'))
+      }, (err: any) => {
+        setErrors(err)
+      })
     }
   }
 
@@ -95,6 +87,12 @@ export default function SignInPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {successMessage && <div className="md:col-span-2">
+                  <Alert variant="success" className="w-full mb-4">{successMessage}</Alert>
+                </div>}
+                  {errors?.non_field_errors && <div className="md:col-span-2">
+                    <Alert variant="destructive" className="w-full mb-4">{errors?.non_field_errors}</Alert>
+                  </div>}
                 <div>
                   <Label htmlFor="email_or_phone" className="mb-1 block text-sm font-medium text-gray-700">
                     {t('email_or_phone')}
@@ -107,13 +105,13 @@ export default function SignInPage() {
                       id="email_or_phone"
                       type="text"
                       placeholder={"017XXXXXXXX"}
-                      className={`pl-10 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                      className={`pl-10 ${errors.email_or_phone || errors.non_field_errors ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
-                  {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                  {errors.email_or_phone && <p className="mt-1 text-xs text-red-500">{errors.email_or_phone}</p>}
                 </div>
 
                 <Button
