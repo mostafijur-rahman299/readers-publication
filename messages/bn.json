@@ -114,7 +114,14 @@
         "password_placeholder": "আপনার পাসওয়ার্ড দিন",
         "confirm_password": "পাসওয়ার্ড নিশ্চিত করুন",
         "confirm_password_placeholder": "আপনার পাসওয়ার্ড নিশ্চিত করুন",
-        "submit": "সাবমিট করুন"
+        "submit": "সাবমিট করুন",
+        "verification_code_required": "ভেরিফিকেশন কোড আবশ্যক",
+        "verification_code_invalid": "ভেরিফিকেশন কোড সঠিক নয়",
+        "password_not_match": "পাসওয়ার্ড মিলছে না",
+        "success_message": "ধন্যবাদ! আপনার পাসওয়ার্ড সফলভাবে আপডেট করা হয়েছে।",
+        "password_required": "পাসওয়ার্ড আবশ্যক",
+        "password_min_length": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে",
+        "confirm_password_required": "পাসওয়ার্ড নিশ্চিত করুন আবশ্যক"
     },
     "support": {
         "title": "সাপোর্ট",

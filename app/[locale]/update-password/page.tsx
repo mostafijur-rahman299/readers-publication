@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,23 +13,25 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useRouter } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { Alert } from "@/components/ui/alert"
 
 export default function SignInPage() {
   const t = useTranslations('update_password');
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<{
-    email?: string;
     password?: string;
-    confirmPassword?: string;
-    verificationCode?: string;
+    confirm_password?: string;
+    code?: string;
+    non_field_errors?: string;
   }>({})
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
+  const {sendRequests: sendUpdatePasswordRequest, isLoading} = useHttp()
+  const [successMessage, setSuccessMessage] = useState("")
   const currentLocale = useLocale()
 
   const togglePasswordVisibility = () => {
@@ -38,42 +40,34 @@ export default function SignInPage() {
 
   const validateForm = () => {
     const newErrors: {
-      email?: string;
       password?: string;
-      confirmPassword?: string;
-      verificationCode?: string;
+      confirm_password?: string;
+      code?: string;
+      non_field_errors?: string;
     } = {}
     let isValid = true
 
-    if (!email) {
-      newErrors.email = "ইমেইল আবশ্যক"
-      isValid = false
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "সঠিক ইমেইল দিন"
-      isValid = false
-    }
-
     if (!verificationCode) {
-      newErrors.verificationCode = "ভেরিফিকেশন কোড আবশ্যক"
+      newErrors.code = t('verification_code_required')
       isValid = false
     } else if (!/^\d{6}$/.test(verificationCode)) {
-      newErrors.verificationCode = "৬ সংখ্যার সঠিক কোড দিন"
+      newErrors.code = t('verification_code_invalid')
       isValid = false
     }
 
     if (!password) {
-      newErrors.password = "পাসওয়ার্ড আবশ্যক"
+      newErrors.password = t('password_required')
       isValid = false
     } else if (password.length < 6) {
-      newErrors.password = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"
+      newErrors.password = t('password_min_length')
       isValid = false
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = "পুনরায় পাসওয়ার্ড দিন"
+      newErrors.confirm_password = t('confirm_password_required')
       isValid = false
     } else if (confirmPassword !== password) {
-      newErrors.confirmPassword = "পাসওয়ার্ড মেলে না"
+      newErrors.confirm_password = t('password_not_match')
       isValid = false
     }
 
@@ -84,19 +78,28 @@ export default function SignInPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
-      setIsLoading(true)
-
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", {
-          email,
-          verificationCode,
-          password,
-          confirmPassword,
-        })
-        setIsLoading(false)
-        router.push("/")
-      }, 1500)
+      sendUpdatePasswordRequest({
+        url_info: {
+          url: API_ENDPOINTS.UPDATE_PASSWORD,
+          is_auth_required: false,
+        },
+        method: "POST",
+        data: {
+          code: verificationCode,
+          password: password,
+          confirm_password: confirmPassword,
+          email_or_phone: sessionStorage.getItem('forget_password_email_or_phone')
+        },
+      }, (response: any) => {
+        setSuccessMessage(t('success_message'))
+        sessionStorage.removeItem('forget_password_email_or_phone')
+        setTimeout(() => {
+          router.push(`/${currentLocale}/signin`)
+        }, 1000)
+      }, (err: any) => {
+        setErrors(err)
+      })    
+     
     }
   }
 
@@ -111,7 +114,7 @@ export default function SignInPage() {
             <div className="relative h-32 bg-gradient-to-r from-brand-600 to-brand-700">
               <div className="absolute -bottom-12 left-1/2 h-24 w-24 -translate-x-1/2 overflow-hidden rounded-full border-4 border-white bg-white shadow-md">
                 <Image
-                  src="/placeholder.svg?height=96&width=96"
+                  src="/readers-icon.png"
                   alt="User"
                   width={96}
                   height={96}
@@ -128,6 +131,9 @@ export default function SignInPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
 
+                {successMessage && <Alert variant="success">{successMessage}</Alert>}
+                {errors.non_field_errors && <Alert variant="destructive">{errors.non_field_errors}</Alert>}
+
                 {/* Verification Code */}
                 <div>
                   <Label htmlFor="verificationCode" className="mb-1 block text-sm font-medium text-gray-700">
@@ -138,12 +144,12 @@ export default function SignInPage() {
                     type="text"
                     maxLength={6}
                     placeholder={t('verification_code_placeholder')}
-                    className={`pl-3 ${errors.verificationCode ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                    className={`pl-3 ${errors.code ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                     disabled={isLoading}
                   />
-                  {errors.verificationCode && <p className="mt-1 text-xs text-red-500">{errors.verificationCode}</p>}
+                  {errors.code && <p className="mt-1 text-xs text-red-500">{errors.code}</p>}
                 </div>
 
                 {/* Password */}
@@ -180,12 +186,12 @@ export default function SignInPage() {
                     id="confirmPassword"
                     type={showPassword ? "text" : "password"}
                     placeholder={t('confirm_password_placeholder')}
-                    className={`pl-3 ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
+                    className={`pl-3 ${errors.confirm_password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-brand-500 focus:ring-brand-500"}`}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     disabled={isLoading}
                   />
-                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
+                  {errors.confirm_password && <p className="mt-1 text-xs text-red-500">{errors.confirm_password}</p>}
                 </div>
 
                 {/* Submit Button */}

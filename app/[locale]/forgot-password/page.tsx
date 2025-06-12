@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -15,6 +14,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import useHttp from "@/hooks/useHttp";
 import { API_ENDPOINTS } from "@/constants/apiEnds";
 import { Alert } from "@/components/ui/alert"
+import { useRouter } from "next/navigation"
 
 export default function SignInPage() {
   const t = useTranslations('forgot_password');
@@ -22,7 +22,7 @@ export default function SignInPage() {
   const [errors, setErrors] = useState<{ email_or_phone?: string; non_field_errors?: string }>({})
   const {sendRequests: sendForgotPasswordRequest, isLoading} = useHttp()
   const [successMessage, setSuccessMessage] = useState("")
-
+  const router = useRouter()
   const currentLocale = useLocale()
 
   const validateForm = () => {
@@ -54,6 +54,10 @@ export default function SignInPage() {
         }
       }, (response: any) => {
         setSuccessMessage(t('success_message'))
+        setTimeout(() => {
+          sessionStorage.setItem('forget_password_email_or_phone', email)
+          router.push(`/${currentLocale}/update-password`)
+        }, 1000)
       }, (err: any) => {
         setErrors(err)
       })

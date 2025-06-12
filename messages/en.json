@@ -100,7 +100,7 @@
         "email_invalid": "Invalid email or phone number",
         "password_required": "Password is required",
         "password_min_length": "Password must be at least 6 characters long",
-        "success_message": "Thank you! We've received your request. We'll send you an email to reset your password."
+        "success_message": "Thank you! We've received your request. We'll send you a code to reset your password."
     },
     "update_password": {
         "title": "Update Password",
@@ -114,7 +114,14 @@
         "password_placeholder": "Enter your password",
         "confirm_password": "Confirm Password",
         "confirm_password_placeholder": "Confirm your password",
-        "submit": "Submit"
+        "submit": "Submit",
+        "verification_code_required": "Verification code is required",
+        "verification_code_invalid": "Verification code is invalid",
+        "password_not_match": "Password does not match",
+        "success_message": "Thank you! Your password has been updated successfully.",
+        "password_required": "Password is required",
+        "password_min_length": "Password must be at least 6 characters long",
+        "confirm_password_required": "Confirm password is required"
     },
     "support": {
         "title": "Help & Support",
