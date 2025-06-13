@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -18,7 +17,8 @@ import useHttp from "@/hooks/useHttp"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 import { useGoogleLogin } from "@react-oauth/google"
 import { Alert } from "@/components/ui/alert"
-
+import { setIsAuthenticated } from "@/store/userSlice"
+import { useDispatch } from "react-redux"
 export default function SignInPage() {
   const t = useTranslations('signin');
   const [showPassword, setShowPassword] = useState(false)
@@ -30,7 +30,7 @@ export default function SignInPage() {
   const router = useRouter()
   const { sendRequests, isLoading } = useHttp()
   const { sendRequests: sendGoogleLoginRequest, isLoading: isGoogleLoginLoading, error: googleLoginError } = useHttp()
-
+  const dispatch = useDispatch()
   const currentLocale = useLocale()
 
   const togglePasswordVisibility = () => {
@@ -67,6 +67,13 @@ export default function SignInPage() {
         data: { email, password },
       }, (response: any) => {
         setSuccessMessage(t('success_message'))
+        localStorage.setItem("access_token", response.access_token)
+        localStorage.setItem("refresh_token", response.refresh_token)
+        dispatch(setIsAuthenticated(true))  
+
+        setTimeout(() => {
+          router.push("/")
+        }, 1000)
       }, (err: any) => {
         setErrors(err)
       })
@@ -93,7 +100,6 @@ export default function SignInPage() {
     },
   });
 
-  console.log(errors)
 
   return (
     <div className="min-h-screen bg-gray-50">

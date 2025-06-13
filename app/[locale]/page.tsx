@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import { CircleNav } from "@/components/circle-nav"
@@ -5,12 +7,18 @@ import { MainCarousel } from "@/components/main-carousel"
 import { NewsGrid } from "@/components/news-grid"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useEffect } from "react"
+import { setIsAuthenticated, setUserInfo } from "@/store/userSlice"
+import { useDispatch } from "react-redux"
+
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header with logo, search and icons */}
-      <Header />
+      <main className="min-h-screen bg-white">
+        {/* Header with logo, search and icons */}
+        <Header />
 
       {/* Main navigation */}
       <Navigation />
@@ -209,8 +217,8 @@ export default function Home() {
               সকল লেখক দেখুন
             </Link>
           </div>
-        </div>
-      </section>
-    </main>
+            </div>
+        </section>
+      </main>
   )
 }

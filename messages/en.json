@@ -206,5 +206,84 @@
     "privacy": {
         "title": "Privacy Policy",
         "description": "Read our privacy policy. We do not collect your information, but we share it with you so that we can help you solve your problem."
+    },
+    "profile": {
+       "member_since": "Member Since",
+       "orders": {
+            "title": "Orders",
+            "your_orders": "Your Orders",
+            "recent": "Recent",
+            "all_orders": "All Orders",
+            "completed": "Completed",
+            "pending": "Pending",
+            "canceled": "Canceled",
+            "delivered": "Delivered",
+            "shipped": "Shipped",
+            "view_details": "View Details",
+            "track_order": "Track Order",
+            "browse_books": "Browse Books",
+            "no_orders": "No orders yet",
+            "no_orders_message": "You haven't ordered any books yet. Browse our book collection and order your favorite books."
+       },
+       "wishlist": {
+            "title": "Wishlist",
+            "your_wishlist": "Your Wishlist",
+            "recent": "Recent",
+            "all_wishlist": "All Wishlist",
+            "add_to_cart": "Add to Cart",
+            "remove": "Remove",
+            "no_wishlist": "No wishlist yet",
+            "no_wishlist_message": "You haven't added any books to your wishlist yet. Add your favorite books to your wishlist."
+       },
+       "reviews": {
+            "title": "Reviews",
+            "your_reviews": "Your Reviews",
+            "recent": "Recent",
+            "all_reviews": "All Reviews",
+            "browse_books": "Browse Books",
+            "no_reviews": "No reviews yet",
+            "no_reviews_message": "You haven't reviewed any books yet. Review the books you've read and help others."
+       },
+       "settings": {
+            "title": "Settings",
+            "your_settings": "Your Settings",
+            "personal_info": "Personal Info",
+            "name": "Name",
+            "email": "Email",
+            "phone_number": "Phone Number",
+            "address": "Address",
+            "password_change": "Change Password",
+            "current_password": "Current Password",
+            "new_password": "New Password",
+            "confirm_new_password": "Confirm New Password",
+            "update": "Update",
+            "delete_account": "Delete Account",
+            "delete_account_message": "Your account will be deleted and cannot be recovered.",
+            "delete_your_account": "Delete Your Account"
+       },
+       "dashboard": "Dashboard",
+       "account": "Account",
+       "address": {
+            "side_title": "Address",
+            "title": "Address Settings",
+            "subtitle": "Update your delivery address. This will be used for your orders."
+       },
+       "payment_methods": {
+            "side_title": "Payment Methods",
+            "title": "Payment Methods",
+            "subtitle": "Update your payment method. This will be used for your orders."
+       },
+       "notifications": {
+            "side_title": "Notifications",
+            "title": "Notification Settings",
+            "subtitle": "Update your notification settings. Choose which type of notification you want to receive.",
+            "order_update": "Order Update",
+            "promotional_email": "Promotional Email",
+            "promotional_sms": "Promotional SMS",
+            "new_book_notification": "New Book Notification",
+            "notification_list": "Notification List",
+            "update_notifications": "Update Notifications"
+       },
+       "logout": "Logout"
     }
 }

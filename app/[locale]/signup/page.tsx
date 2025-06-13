@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react"
@@ -17,6 +16,8 @@ import useHttp from "@/hooks/useHttp"
 import { Alert } from "@/components/ui/alert"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 import { useGoogleLogin } from "@react-oauth/google"
+import { setIsAuthenticated } from "@/store/userSlice"
+import { useDispatch } from "react-redux"
 
 export default function SignUpPage() {
   const t = useTranslations('signup');
@@ -40,9 +41,9 @@ export default function SignUpPage() {
   const {sendRequests: sendSignUpRequest, isLoading: isSignUpLoading} = useHttp()
   const {sendRequests: sendGoogleLoginRequest, isLoading: isGoogleLoginLoading, error: googleLoginError} = useHttp()
   const [successMessage, setSuccessMessage] = useState<string>("")
-
+  const router = useRouter()
   const currentLocale = useLocale()
-
+  const dispatch = useDispatch()
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
@@ -88,10 +89,6 @@ export default function SignUpPage() {
     setSuccessMessage("")
     if (validateForm()) {
 
-      const response = (data: any) => {
-        setSuccessMessage(t('success_message'))
-      }
-
       sendSignUpRequest(
         {
           url_info: {
@@ -103,7 +100,15 @@ export default function SignUpPage() {
             full_name: name, email, phone_number: phone, password, confirm_password: confirmPassword, terms_and_conditions: agreeTerms
           }
         }
-      , response, (err: any) => {
+      , (data: any) => {
+        setSuccessMessage(t('success_message'))
+        localStorage.setItem("access_token", data.access_token)
+        localStorage.setItem("refresh_token", data.refresh_token)
+        dispatch(setIsAuthenticated(true))
+        setTimeout(() => {
+          router.push("/")
+        }, 1000)
+      }, (err: any) => {
         setErrors(err)
       })
     }

@@ -11,6 +11,8 @@ import { hasLocale, NextIntlClientProvider, useMessages } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from "@/i18n/routing"
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Providers } from "@/utils/providers"
+import FetchUserData from "@/components/UserInfo"
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -49,10 +51,13 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
             <NextIntlClientProvider messages={messages} locale={locale}>
-              <div className="relative flex min-h-screen flex-col">
-                <main className="flex-1">{children}</main>
-                <SiteFooter />
-              </div>
+              <Providers>
+                <div className="relative flex min-h-screen flex-col">
+                  <FetchUserData />
+                  <main className="flex-1">{children}</main>
+                  <SiteFooter />
+                </div>
+              </Providers>
             </NextIntlClientProvider>
           </GoogleOAuthProvider>
         </ThemeProvider>

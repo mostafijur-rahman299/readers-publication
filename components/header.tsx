@@ -10,18 +10,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { FaHeadphones, FaGift, FaShoppingCart } from "react-icons/fa";
 import { useEffect, useState } from 'react';
+import { useSelector } from "react-redux";
 
-interface HeaderProps {
-  isLoggedIn?: boolean
-  userName?: string
-}
-
-export function Header({ isLoggedIn = false, userName = "" }: HeaderProps) {
+export function Header() {
   const t = useTranslations('header');
   const router = useRouter();
   const pathname = usePathname();
   const [showLanguageSwitcher, setShowLanguageSwitcher] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { isAuthenticated } = useSelector((state: any) => state.user);
 
   const currentLocale = pathname.split('/')[1];
   const restOfPath = pathname.split('/').slice(2).join('/');
@@ -134,11 +131,11 @@ export function Header({ isLoggedIn = false, userName = "" }: HeaderProps) {
 
             {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <Link href={`/${currentLocale}/profile`} className="flex flex-col items-center text-sm font-medium hover:text-brand-700">
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-50 overflow-hidden">
                   <Image
-                    src="/profile-placeholder.png"
+                    src="/default_profile.png"
                     alt={t('profile')}
                     width={32}
                     height={32}
