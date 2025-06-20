@@ -158,11 +158,11 @@ export default function Home() {
       </section>
 
       {/* Special Offers Carousel */}
-      {/* <section className="py-12">
+      <section className="py-12">
         <div className="container mx-auto px-4">
           <SpecialOffersCarousel />
         </div>
-      </section> */}
+      </section>
 
       <section className="py-12">
         <div className="container mx-auto px-4">
