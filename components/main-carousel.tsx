@@ -3,43 +3,28 @@
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useLocale } from "next-intl"
 
-export function MainCarousel() {
+export function MainCarousel({ carouselItems, isLoading }: { carouselItems: any[], isLoading: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
-  const slides = [
-    {
-      image: "/placeholder.svg?height=400&width=800",
-      title: "নতুন প্রকাশিত বইসমূহ",
-      description: "সাম্প্রতিক প্রকাশিত সেরা বইগুলো এখনই কিনুন",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=800",
-      title: "বিশেষ অফার",
-      description: "সকল বইয়ে ২০% পর্যন্ত ছাড়",
-    },
-    {
-      image: "/placeholder.svg?height=400&width=800",
-      title: "শিশুদের জন্য বিশেষ সংগ্রহ",
-      description: "আপনার সন্তানের জন্য সেরা বইসমূহ",
-    },
-  ]
+  const locale = useLocale()
 
   const nextSlide = useCallback(() => {
     if (!isAnimating) {
       setIsAnimating(true)
-      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
+      setCurrentSlide((prev) => (prev === carouselItems.length - 1 ? 0 : prev + 1))
       setTimeout(() => setIsAnimating(false), 500)
     }
-  }, [isAnimating, slides.length])
+  }, [isAnimating, carouselItems.length])
 
   const prevSlide = useCallback(() => {
     if (!isAnimating) {
       setIsAnimating(true)
-      setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))
+      setCurrentSlide((prev) => (prev === 0 ? carouselItems.length - 1 : prev - 1))
       setTimeout(() => setIsAnimating(false), 500)
     }
-  }, [isAnimating, slides.length])
+  }, [isAnimating, carouselItems.length])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -54,10 +39,10 @@ export function MainCarousel() {
         className="flex h-full transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {slides.map((slide, index) => (
+        {carouselItems.map((slide: any, index: number) => (
           <div key={index} className="relative min-w-full">
             <Image
-              src={slide.image || "/placeholder.svg"}
+              src={slide.image_url}
               alt={`Slide ${index + 1}`}
               fill
               className="h-full w-full object-cover"
@@ -65,8 +50,8 @@ export function MainCarousel() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6 text-white">
-              <h2 className="mb-2 text-2xl font-bold">{slide.title}</h2>
-              <p className="text-lg">{slide.description}</p>
+              <h2 className="mb-2 text-2xl font-bold">{locale === "bn" && slide.title_bn ? slide.title_bn : slide.title}</h2>
+              <p className="text-lg">{locale === "bn" && slide.subtitle_bn ? slide.subtitle_bn : slide.subtitle}</p>
             </div>
           </div>
         ))}
@@ -91,7 +76,7 @@ export function MainCarousel() {
       </button>
 
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2">
-        {slides.map((_, index) => (
+        {carouselItems.map((_: any, index: number ) => (
           <button
             key={index}
             onClick={() => {

@@ -285,5 +285,11 @@
             "update_notifications": "Update Notifications"
        },
        "logout": "Logout"
+    },
+    "home": {
+        "more_view_categories": "More View",
+        "read_all_articles": "Read All Articles",
+        "testimonials_section_title": "Testimonials",
+        "testimonials_section_subtitle": "What our customers say about our service and books"
     }
 }

@@ -3,6 +3,10 @@ import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User } from "lucide-react"
+import useHttp from "@/hooks/useHttp"
+import { useLocale, useTranslations } from "next-intl"
+import { useEffect, useState } from "react"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
 
 const articles = [
   {
@@ -44,114 +48,82 @@ const articles = [
     date: "৮ ডিসেম্বর, ২০২৪",
     category: "শিশু সাহিত্য",
     readTime: "৬ মিনিট",
-  },
-  {
-    id: 5,
-    title: "বিজ্ঞান বিষয়ক বই পড়ার উপকারিতা",
-    excerpt: "বিজ্ঞান বিষয়ক বই পড়ে কীভাবে আমাদের চিন্তাভাবনা এবং দৃষ্টিভঙ্গি পরিবর্তন হয়।",
-    image: "/placeholder.svg?height=200&width=300",
-    author: "ড. আব্দুল কাদের",
-    date: "৫ ডিসেম্বর, ২০২৪",
-    category: "বিজ্ঞান",
-    readTime: "৮ মিনিট",
-  },
+  }
 ]
 
-export function ArticlesSection() {
+export function ArticlesSection({generalData}: {generalData: any}) {
+  const [articles, setArticles] = useState<any[]>([])
+  const {sendRequests: fetchArticles, isLoading} = useHttp()
+  const locale = useLocale()
+  const t = useTranslations("home")
+
+  useEffect(() => {
+    fetchArticles({
+      url_info: {
+        url: API_ENDPOINTS.BLOG_LIST + "?is_featured=True",
+      }
+    }, (data: any) => {
+      setArticles(data.results)
+    })
+  }, [])
+
+  if (articles.length === 0) return null
+  
   return (
     <Card className="overflow-hidden shadow-lg">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-          <h2 className="text-2xl font-bold mb-2">আমাদের আর্টিকেল পড়ুন</h2>
-          <p className="text-blue-100">সাহিত্য, ইতিহাস এবং জ্ঞানের জগতের নতুন খবর</p>
+        <div className="bg-gradient-to-r p-6">
+          <h2 className="text-2xl font-bold mb-2">{locale === "bn" && generalData?.title_bn ? generalData?.title_bn : generalData?.title}</h2>
+          <p className="text-gray-900">{locale === "bn" && generalData?.subtitle_bn ? generalData?.subtitle_bn : generalData?.subtitle}</p>
         </div>
 
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {articles.slice(0, 4).map((article) => (
-              <Link key={article.id} href={`/articles/${article.id}`}>
+              <Link key={article.id} href={`/blog/${article.slug}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
                   <CardContent className="p-0">
                     <div className="relative overflow-hidden">
                       <Image
-                        src={article.image || "/placeholder.svg"}
+                        src={article.cover_image || "/placeholder.svg"}
                         alt={article.title}
                         width={300}
                         height={200}
                         className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                       />
-                      <Badge className="absolute top-3 left-3 bg-blue-500 hover:bg-blue-600">{article.category}</Badge>
+                      {/* <Badge className="absolute top-3 left-3 bg-blue-500 hover:bg-blue-600">{article.category}</Badge> */}
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {article.title}
+                        {locale === "bn" && article.title_bn ? article.title_bn : article.title}
                       </h3>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-3">{article.excerpt}</p>
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-3">{locale === "bn" && article.subtitle_bn ? article.subtitle_bn : article.subtitle}</p>
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          <span>{article.author}</span>
+                          <span>{locale === "bn" && article.author_name_bn ? article.author_name_bn : article.author_name}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          <span>{article.date}</span>
+                          <span>{article.published_date}</span>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-blue-600 font-medium">পড়তে সময় লাগবে: {article.readTime}</div>
+                      <div className="mt-2 text-xs text-blue-600 font-medium">Read Time: {article.read_time}</div>
                     </div>
                   </CardContent>
                 </Card>
               </Link>
             ))}
 
-            {/* Show 5th article only on larger screens */}
-            <div className="hidden xl:block">
-              <Link href={`/articles/${articles[4].id}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group">
-                  <CardContent className="p-0">
-                    <div className="relative overflow-hidden">
-                      <Image
-                        src={articles[4].image || "/placeholder.svg"}
-                        alt={articles[4].title}
-                        width={300}
-                        height={200}
-                        className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <Badge className="absolute top-3 left-3 bg-blue-500 hover:bg-blue-600">
-                        {articles[4].category}
-                      </Badge>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                        {articles[4].title}
-                      </h3>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-3">{articles[4].excerpt}</p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          <span>{articles[4].author}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{articles[4].date}</span>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-xs text-blue-600 font-medium">
-                        পড়তে সময় লাগবে: {articles[4].readTime}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
+           
           </div>
 
           <div className="text-center mt-6">
             <Link
-              href="/articles"
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              href="/blog"
+              className="inline-flex items-center px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium"
             >
-              সব আর্টিকেল দেখুন →
+              {t("read_all_articles")} →
             </Link>
           </div>
         </div>
