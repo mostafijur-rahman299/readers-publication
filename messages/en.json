@@ -290,6 +290,10 @@
         "more_view_categories": "More View",
         "read_all_articles": "Read All Articles",
         "testimonials_section_title": "Testimonials",
-        "testimonials_section_subtitle": "What our customers say about our service and books"
+        "testimonials_section_subtitle": "What our customers say about our service and books",
+        "new_books": "New Books",
+        "popular_books": "Popular Books",
+        "coming_soon": "Coming Soon...",
+        "all_books": "All Books"
     }
 }

@@ -7,94 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useRef, useState, useEffect } from "react"
 
-export function NewsGrid() {
+export function NewsGrid({ book_type, books }: { book_type: string, books: any[] }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-
-  // Sample book data
-  const books = [
-    {
-      id: 1,
-      title: "নীল জোসনা",
-      author: "হুমায়ূন আহমেদ",
-      price: 350,
-      originalPrice: 400,
-      rating: 4.5,
-      isNew: true,
-      discount: 15,
-    },
-    {
-      id: 2,
-      title: "পথের পাঁচালী",
-      author: "বিভূতিভূষণ বন্দ্যোপাধ্যায়",
-      price: 280,
-      originalPrice: 320,
-      rating: 4.8,
-      isNew: false,
-      discount: 12,
-    },
-    {
-      id: 3,
-      title: "ফেলুদা সমগ্র",
-      author: "সত্যজিৎ রায়",
-      price: 550,
-      originalPrice: 600,
-      rating: 4.7,
-      isNew: true,
-      discount: 8,
-    },
-    {
-      id: 4,
-      title: "শেষের কবিতা",
-      author: "রবীন্দ্রনাথ ঠাকুর",
-      price: 250,
-      originalPrice: 300,
-      rating: 4.9,
-      isNew: false,
-      discount: 17,
-    },
-    {
-      id: 5,
-      title: "দেবী চৌধুরানী",
-      author: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়",
-      price: 220,
-      originalPrice: 250,
-      rating: 4.3,
-      isNew: false,
-      discount: 12,
-    },
-    {
-      id: 6,
-      title: "আরণ্যক",
-      author: "বিভূতিভূষণ বন্দ্যোপাধ্যায়",
-      price: 300,
-      originalPrice: 350,
-      rating: 4.6,
-      isNew: true,
-      discount: 14,
-    },
-    {
-      id: 7,
-      title: "গোরা",
-      author: "রবীন্দ্রনাথ ঠাকুর",
-      price: 320,
-      originalPrice: 380,
-      rating: 4.4,
-      isNew: false,
-      discount: 16,
-    },
-    {
-      id: 8,
-      title: "চোখের বালি",
-      author: "রবীন্দ্রনাথ ঠাকুর",
-      price: 290,
-      originalPrice: 340,
-      rating: 4.7,
-      isNew: true,
-      discount: 15,
-    },
-  ]
 
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
@@ -107,10 +23,10 @@ export function NewsGrid() {
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       const cardWidth = scrollContainerRef.current.children[0]?.clientWidth || 200
-      const gap = 16 // 1rem gap
+      const gap = 16
       const scrollAmount = cardWidth + gap
       scrollContainerRef.current.scrollBy({
-        left: -scrollAmount * 2, // Scroll 2 cards at a time
+        left: -scrollAmount * 2,
         behavior: "smooth",
       })
     }
@@ -119,10 +35,10 @@ export function NewsGrid() {
   const scrollRight = () => {
     if (scrollContainerRef.current) {
       const cardWidth = scrollContainerRef.current.children[0]?.clientWidth || 200
-      const gap = 16 // 1rem gap
+      const gap = 16
       const scrollAmount = cardWidth + gap
       scrollContainerRef.current.scrollBy({
-        left: scrollAmount * 2, // Scroll 2 cards at a time
+        left: scrollAmount * 2,
         behavior: "smooth",
       })
     }
@@ -145,83 +61,102 @@ export function NewsGrid() {
   return (
     <div className="relative w-full">
       {/* Navigation Buttons */}
-      <Button
-        variant="outline"
-        size="icon"
-        className={`absolute left-2 top-1/2 z-10 h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl ${
-          !canScrollLeft ? "opacity-50 cursor-not-allowed" : "hover:scale-110"
-        }`}
-        onClick={scrollLeft}
-        disabled={!canScrollLeft}
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </Button>
+      {books.length > 0 && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={`absolute left-0 top-1/2 z-10 h-12 w-12 -translate-y-1/2 rounded-full bg-white/80 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl ${
+            !canScrollLeft ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+          }`}
+          onClick={scrollLeft}
+          disabled={!canScrollLeft}
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+      )}
 
-      <Button
-        variant="outline"
-        size="icon"
-        className={`absolute right-2 top-1/2 z-10 h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl ${
-          !canScrollRight ? "opacity-50 cursor-not-allowed" : "hover:scale-110"
-        }`}
-        onClick={scrollRight}
-        disabled={!canScrollRight}
-      >
-        <ChevronRight className="h-5 w-5" />
-      </Button>
+      {books.length > 0 && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={`absolute right-0 top-1/2 z-10 h-12 w-12 -translate-y-1/2 rounded-full bg-white/80 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:shadow-xl ${
+            !canScrollRight ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+          }`}
+          onClick={scrollRight}
+          disabled={!canScrollRight}
+        >
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+      )}
 
       {/* Carousel Container */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth px-4 py-2 scrollbar-hide"
+        className="flex gap-6 overflow-x-auto scroll-smooth px-8 py-6 scrollbar-hide"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
           WebkitScrollbar: { display: "none" },
         }}
       >
+        {books.length === 0 && (
+          <div className="flex items-center justify-center w-full min-h-[420px]">
+            <p className="text-gray-500 text-base font-medium">No books found</p>
+          </div>
+        )}
+        
         {books.map((book) => (
           <Link key={book.id} href={`/books/${book.id}`} className="group flex-none">
-            <div className="relative w-36 sm:w-40 md:w-44 lg:w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
-              <div className="relative aspect-[3/4] w-full">
+            <div className="relative h-[480px] w-72 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+              <div className="relative h-[320px] w-full">
                 <Image
-                  src={`/placeholder.svg?height=300&width=200&text=Book${book.id}`}
+                  src={book.cover_image}
                   alt={book.title}
                   fill
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 288px) 100vw, 288px"
+                  priority
                 />
                 {book.isNew && (
-                  <Badge className="absolute left-2 top-2 bg-red-500 text-white text-xs px-2 py-1">নতুন</Badge>
+                  <Badge className="absolute left-4 top-4 bg-red-500 text-white text-sm px-3 py-1.5 shadow-md">নতুন</Badge>
                 )}
                 {book.discount > 0 && (
-                  <Badge className="absolute right-2 top-2 bg-blue-500 text-white text-xs px-2 py-1">
+                  <Badge className="absolute right-4 top-4 bg-blue-500 text-white text-sm px-3 py-1.5 shadow-md">
                     -{book.discount}%
                   </Badge>
                 )}
               </div>
 
-              <div className="p-3 space-y-2">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-3 w-3 ${
-                        i < Math.floor(book.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="ml-1 text-xs text-gray-600 font-medium">{book.rating}</span>
+              <div className="p-5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.floor(book.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm text-gray-500">{book.rating}</span>
+                  </div>
                 </div>
 
-                <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight transition-colors group-hover:text-blue-600">
-                  {book.title}
-                </h3>
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-gray-900 leading-tight transition-colors group-hover:text-blue-600 min-h-[2.5rem] line-clamp-2">
+                    {book.title}
+                  </h3>
+                  <p className="text-sm font-medium text-gray-600 line-clamp-1">
+                    {book.author}
+                  </p>
+                </div>
 
-                <p className="text-xs text-gray-600 line-clamp-1">{book.author}</p>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-sm font-bold text-blue-600">৳ {book.price}</span>
+                <div className="flex items-center">
+                  <span className="text-base font-bold text-blue-600">৳{book.price}</span>
                   {book.originalPrice > book.price && (
-                    <span className="text-xs text-gray-500 line-through">৳ {book.originalPrice}</span>
+                    <span className="text-sm font-medium text-gray-400 line-through">
+                      ৳{book.originalPrice}
+                    </span>
                   )}
                 </div>
               </div>

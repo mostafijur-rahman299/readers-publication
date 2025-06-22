@@ -27,6 +27,10 @@ export default function Home() {
   const {sendRequests: fetchCarousel, isLoading: isCarouselLoading} = useHttp()
   const {sendRequests: fetchGeneralData} = useHttp()
   const generalData = useSelector((state: any) => state.generalData.generalData)
+  const [newArrivalBooks, setNewArrivalBooks] = useState<any[]>([])
+  const [popularBooks, setPopularBooks] = useState<any[]>([])
+  const [commingSoonBooks, setCommingSoonBooks] = useState<any[]>([])
+  const {sendRequests: fetchBooks, isLoading: isBooksLoading} = useHttp()
 
   // Fetch categories
   useEffect(() => {
@@ -58,6 +62,19 @@ export default function Home() {
       dispatch(setGeneralData(res))
     })
   }, [])
+
+  // Fetch books
+  useEffect(() => {
+    fetchBooks({
+      url_info: {
+        url: API_ENDPOINTS.BOOKS + "?pagination=false",
+      }
+    }, (res: any) => {
+      setNewArrivalBooks(res.filter((item: any) => item.is_new_arrival))
+      setPopularBooks(res.filter((item: any) => item.is_popular))
+      setCommingSoonBooks(res.filter((item: any) => item.is_comming_soon))
+    })
+  }, [])  
 
   return (
     <main className="min-h-screen bg-white">
@@ -132,49 +149,47 @@ export default function Home() {
       
 
       {/* Featured section */}
-      <section className="py-12">
+      {newArrivalBooks?.length > 0 && <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">নতুন প্রকাশিত বই</h2>
-            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
-              সব দেখুন →
-            </Link> */}
+            <h2 className="text-2xl font-bold text-gray-900">{t("new_books")}</h2>
+            <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              {t("all_books")} →
+            </Link>
           </div>
-          <NewsGrid />
-          <NewsGrid />
+          <NewsGrid book_type="new_arrival" books={newArrivalBooks} />
         </div>
-      </section>
+      </section>}
 
-      <section className="py-12">
+      {popularBooks?.length > 0 && <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">জনপ্রিয় বই</h2>
-            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
-              সব দেখুন →
-            </Link> */}
+            <h2 className="text-2xl font-bold text-gray-900">{t("popular_books")}</h2>
+            <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              {t("all_books")} →
+            </Link>
           </div>
-          <NewsGrid />
+          <NewsGrid book_type="popular" books={popularBooks} />
         </div>
-      </section>
+      </section>}
 
-      {/* Special Offers Carousel */}
-      <section className="py-12">
+     <section className="py-12">  
         <div className="container mx-auto px-4">
           <SpecialOffersCarousel />
         </div>
       </section>
 
-      <section className="py-12">
+      {commingSoonBooks?.length > 0 && <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">শীঘ্রই আসছে...</h2>
-            {/* <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
-              সব দেখুন →
-            </Link> */}
+            <h2 className="text-2xl font-bold text-gray-900">{t("coming_soon")}</h2>
+            <Link href="/books/new" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+              {t("all_books")} →
+            </Link>
           </div>
-          <NewsGrid />
+          <NewsGrid book_type="comming_soon" books={commingSoonBooks} />
         </div>
-      </section>
+      </section>}
 
       {/* Articles Section */}
       <section className="py-12">

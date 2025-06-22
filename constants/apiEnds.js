@@ -14,4 +14,5 @@ export const API_ENDPOINTS = {
   BLOG_LIST: `${BACKEND_URL}/blog/api/v1/list/`,
   BLOG_DETAIL: (slug) => `${BACKEND_URL}/blog/api/v1/detail/${slug}/`,
   TESTIMONIALS: `${BACKEND_URL}/core/api/v1/testimonials/`,
+  BOOKS: `${BACKEND_URL}/book/api/v1/list/`,
 }
