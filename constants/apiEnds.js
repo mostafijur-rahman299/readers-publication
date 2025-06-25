@@ -1,4 +1,4 @@
-const BACKEND_URL = "http://localhost:8000"
+const BACKEND_URL = "http://localhost:8001"
 
 export const API_ENDPOINTS = {
   LOGIN: `${BACKEND_URL}/api/token/`,
@@ -15,4 +15,5 @@ export const API_ENDPOINTS = {
   BLOG_DETAIL: (slug) => `${BACKEND_URL}/blog/api/v1/detail/${slug}/`,
   TESTIMONIALS: `${BACKEND_URL}/core/api/v1/testimonials/`,
   BOOKS: `${BACKEND_URL}/book/api/v1/list/`,
+  SPECIAL_PACKAGES: `${BACKEND_URL}/book/api/v1/special-packages/`,
 }

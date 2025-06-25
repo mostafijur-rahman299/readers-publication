@@ -1,8 +1,6 @@
 "use client"
 
-import { useState } from "react"
-
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import {
   Carousel,
@@ -12,21 +10,14 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-
-const specialOffers = [
-  {
-    id: 1,
-    image: "/banner-ex2.avif",
-  },
-  {
-    id: 2,
-    image: "/home-banner-ex.avif",
-  }
-]
+import useHttp from "@/hooks/useHttp";
+import { API_ENDPOINTS } from "@/constants/apiEnds";
 
 export function SpecialOffersCarousel() {
   const [api, setApi] = useState<CarouselApi>()
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout>(null)
+  const [specialOffers, setSpecialOffers] = useState<any[]>([]);
+  const {sendRequests, isLoading} = useHttp()
 
   useEffect(() => {
     if (!api) return
@@ -57,6 +48,18 @@ export function SpecialOffersCarousel() {
     }
   }, [api])
 
+  // Fetch data
+  useEffect(() => {
+    sendRequests({
+      url_info: {
+        url: API_ENDPOINTS.SPECIAL_PACKAGES
+      }
+    }, (res: any) => {
+      setSpecialOffers(res?.results)
+    })
+  }, [])
+
+
   return (
     <div className="w-full">
       <Carousel
@@ -69,11 +72,11 @@ export function SpecialOffersCarousel() {
       >
         <CarouselContent>
           {specialOffers.map((offer) => (
-            <CarouselItem key={offer.id} className="basis-full md:basis-1/2">
+            <CarouselItem key={offer.uuid} className="basis-full md:basis-1/2">
               <div className="p-1">
                 <Image
                   src={offer.image || "/placeholder.svg"}
-                  alt={`Special offer ${offer.id}`}
+                  alt={`Special offer ${offer.uuid}`}
                   width={400}
                   height={300}
                   className="w-full h-64 object-cover rounded-lg"

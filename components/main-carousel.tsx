@@ -34,7 +34,8 @@ export function MainCarousel({ carouselItems, isLoading }: { carouselItems: any[
   }, [nextSlide])
 
   return (
-    <div className="relative h-[400px] overflow-hidden rounded-lg shadow-md">
+    <div className="relative h-[385px] overflow-hidden rounded-lg shadow-md">
+
       <div
         className="flex h-full transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}

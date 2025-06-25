@@ -294,6 +294,7 @@
         "new_books": "New Books",
         "popular_books": "Popular Books",
         "coming_soon": "Coming Soon...",
-        "all_books": "All Books"
+        "all_books": "All Books",
+        "best_selling": "Best Seller"
     }
 }

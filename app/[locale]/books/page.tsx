@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -7,11 +8,29 @@ import { Input } from "@/components/ui/input"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useLocale, useTranslations } from "next-intl"
+import useHttp from "@/hooks/useHttp";
+import { API_ENDPOINTS } from "@/constants/apiEnds";
 
 export default function BooksPage() {
   const t = useTranslations("books")
   const pt = useTranslations("pagination")
   const locale = useLocale()
+  const { sendRequests: fetchCategories, isLoading } = useHttp();
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+		fetchCategories(
+			{
+				url_info: {
+					url: API_ENDPOINTS.CATEGORIES + "?is_featured=true",
+				},
+			},
+			(res: any) => {
+				setCategories(res);
+				console.log(res);
+			},
+		);
+	}, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -35,11 +54,11 @@ export default function BooksPage() {
                   <div>
                     <h4 className="mb-2 font-medium">{t("category")}</h4>
                     <div className="space-y-2">
-                      {["উপন্যাস", "গল্প", "কবিতা", "ইতিহাস", "বিজ্ঞান", "ধর্ম"].map((category) => (
-                        <div key={category} className="flex items-center">
-                          <input type="checkbox" id={category} className="mr-2 h-4 w-4" />
-                          <label htmlFor={category} className="text-sm">
-                            {category}
+                      {categories.map((category) => (
+                        <div key={category.slug} className="flex items-center">
+                          <input type="checkbox" id={category.id} className="mr-2 h-4 w-4" />
+                          <label htmlFor={category.name} className="text-sm">
+                            {category.name}
                           </label>
                         </div>
                       ))}

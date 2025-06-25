@@ -31,7 +31,7 @@ export function TestimonialsSlider() {
   if (testimonials.length === 0) return null
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+    <div className="py-12">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("testimonials_section_title")}</h2>
