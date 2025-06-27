@@ -8,7 +8,7 @@ export const API_ENDPOINTS = {
   FORGOT_PASSWORD: `${BACKEND_URL}/user/api/v1/auth/forgot-password/`,
   UPDATE_PASSWORD: `${BACKEND_URL}/user/api/v1/auth/update-password/`,
   USER_PROFILE: `${BACKEND_URL}/user/api/v1/user/profile/`,
-  CATEGORIES: `${BACKEND_URL}/book/api/v1/categories/?is_featured=true`,
+  CATEGORIES: `${BACKEND_URL}/book/api/v1/categories/`,
   HOME_CAROUSEL: `${BACKEND_URL}/core/api/v1/home-carousel/`, 
   GENERAL_DATA: `${BACKEND_URL}/core/api/v1/general-data/`,
   BLOG_LIST: `${BACKEND_URL}/blog/api/v1/list/`,
@@ -16,4 +16,6 @@ export const API_ENDPOINTS = {
   TESTIMONIALS: `${BACKEND_URL}/core/api/v1/testimonials/`,
   BOOKS: `${BACKEND_URL}/book/api/v1/list/`,
   SPECIAL_PACKAGES: `${BACKEND_URL}/book/api/v1/special-packages/`,
+  AUTHORS: `${BACKEND_URL}/author/api/v1/list/`,
+  AUTHOR_DETAIL: (pk) => `${BACKEND_URL}/author/api/v1/detail/${pk}/`,
 }
