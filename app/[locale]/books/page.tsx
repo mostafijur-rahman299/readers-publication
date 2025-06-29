@@ -319,7 +319,7 @@ export default function BooksPage() {
                 )}
 
                 {books.length > 0 && books.map((book) => (
-                  <Link key={book.id} href={`/books/${book.slug}`} className="group">
+                  <Link key={book.slug} href={`/books/${book.slug}`} className="group">
                     <div className="mb-3 overflow-hidden rounded-md border border-gray-200 relative">
                       {book.discounted_price && book.discounted_price < book.price && (
                         <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
