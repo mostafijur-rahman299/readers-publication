@@ -300,5 +300,25 @@
         "coming_soon": "শীঘ্রই আসছে...",
         "all_books": "সব বই দেখুন",
         "best_selling": ""
+    },
+    "book_details": {
+        "main_page": "মূল পাতা",
+        "all_books": "সকল বই",
+        "discount": "ছাড়",
+        "stock_available": "স্টকে আছে",
+        "stock_not_available": "স্টকে নেই",
+        "only": "মাত্র",
+        "book": "বই",
+        "available": "অবশিষ্ট",
+        "t": "টি",
+        "publisher": "প্রকাশক",
+        "page": "পৃষ্ঠা",
+        "language": "ভাষা",
+        "edition": "সংস্করণ",
+        "publication_date": "প্রকাশন তারিখ",
+        "description": "বিবরণ",
+        "author": "লেখক",
+        "category": "বিষয়",
+        "read_now": "এখন পড়ুন"
     }
 }   

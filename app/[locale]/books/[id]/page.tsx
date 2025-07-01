@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -16,6 +17,8 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
+  Edit,
+  Download,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -23,45 +26,57 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useParams } from "next/navigation"
-import { useState, useRef } from "react"
+import { Header } from "@/components/header"
+import { Navigation } from "@/components/navigation"
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useLocale, useTranslations } from "next-intl"
 
 export default function BookDetailPage() {
   const { id } = useParams()
   const bookId = id as string
-
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isReading, setIsReading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [zoom, setZoom] = useState(100)
   const [currentReviewPage, setCurrentReviewPage] = useState(1)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [bookData, setBookData] = useState<any>(null)
+  const locale = useLocale()
+  const [bookImages, setBookImages] = useState<any[]>([])
+  const [selectedBookImage, setSelectedBookImage] = useState<any>(null)
+  const t = useTranslations("book_details")
 
   const availableStock = 25
   const reviewsPerPage = 3
 
-  const bookImages = [
-    `/placeholder.svg?height=400&width=300&text=Cover`,
-    `/placeholder.svg?height=400&width=300&text=Back`,
-    `/placeholder.svg?height=400&width=300&text=Inside`,
-  ]
+  const { sendRequests: fetchBook, isLoading: isBookLoading } = useHttp()
 
-  // Mock book pages for reading
-  const bookPages = Array.from({ length: 20 }, (_, i) => ({
-    page: i + 1,
-    content: `অধ্যায় ${Math.ceil((i + 1) / 5)} - পৃষ্ঠা ${i + 1}
-
-এটি একটি নমুনা পৃষ্ঠা। এখানে বইয়ের প্রকৃত বিষয়বস্তু থাকবে। লেখক তার অনন্য শৈলীতে পাঠকদের নিয়ে যান এক অবিস্মরণীয় যাত্রায়। 
-
-বইটির চরিত্রগুলো এতটাই জীবন্ত যে পাঠক নিজেকে তাদের মাঝে হারিয়ে ফেলেন। প্রতিটি পৃষ্ঠায় লেখক তার অসাধারণ কল্পনাশক্তি এবং ভাষার জাদু দিয়ে পাঠকদের মুগ্ধ করেন।
-
-এই অংশে আরও বিস্তারিত গল্প এবং চরিত্রের বিকাশ দেখানো হবে। গল্পের প্রবাহ এমনভাবে এগিয়ে চলে যে পাঠক একবার পড়া শুরু করলে শেষ না করে উঠতে পারেন না।
-
-"জীবনটা অনেক সুন্দর, যদি আমরা সেটা বুঝতে পারি।" - এই বাক্যটি যেন পুরো বইয়ের মূল বার্তা। লেখক তার অভিজ্ঞতা এবং দর্শনের মাধ্যমে পাঠকদের জীবনের প্রকৃত অর্থ খুঁজে পেতে সাহায্য করেন।
-
-প্রতিটি চরিত্রের মানসিক দ্বন্দ্ব এবং তাদের জীবনের উত্থান-পতনের গল্প এতটাই বাস্তবসম্মত যে মনে হয় আমাদের চারপাশেরই কোনো পরিচিত মানুষের কথা বলা হচ্ছে।`,
-  }))
+  useEffect(() => {
+    fetchBook(
+      {
+        url_info: {
+          url: API_ENDPOINTS.BOOK_DETAIL(bookId),
+        },
+      },
+      (res: any) => {
+        setBookData(res)
+        setBookImages([
+          {
+            image: res.cover_image,
+            alt_text: res.title,
+            id: "cover-image",
+          },
+          ...res.book_images,
+        ])
+        setSelectedBookImage({
+          image: res.cover_image,
+          alt_text: res.title,
+          id: "cover-image",
+        })
+      },
+    )
+  }, [bookId])
 
   // All reviews data
   const allReviews = [
@@ -155,6 +170,10 @@ export default function BookDetailPage() {
     }
   }
 
+  const onSelectBookImage = (image: any) => {
+    setSelectedBookImage(image)
+  }
+
   const toggleWishlist = () => {
     setIsWishlisted(!isWishlisted)
   }
@@ -171,74 +190,40 @@ export default function BookDetailPage() {
   }
 
   const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % bookImages.length)
+    const currentIndex = bookImages.findIndex((image) => image.id === selectedBookImage?.id)
+    const nextIndex = (currentIndex + 1) % bookImages.length
+    setSelectedBookImage(bookImages[nextIndex])
   }
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + bookImages.length) % bookImages.length)
+    const currentIndex = bookImages.findIndex((image) => image.id === selectedBookImage?.id)
+    const prevIndex = (currentIndex - 1 + bookImages.length) % bookImages.length
+    setSelectedBookImage(bookImages[prevIndex])
   }
 
-  const scrollToPage = (pageNumber: number) => {
-    if (scrollContainerRef.current) {
-      const pageHeight = scrollContainerRef.current.scrollHeight / bookPages.length
-      scrollContainerRef.current.scrollTo({
-        top: (pageNumber - 1) * pageHeight,
-        behavior: "smooth",
-      })
-    }
-  }
-
-  const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const scrollTop = scrollContainerRef.current.scrollTop
-      const pageHeight = scrollContainerRef.current.scrollHeight / bookPages.length
-      const newPage = Math.floor(scrollTop / pageHeight) + 1
-      if (newPage !== currentPage && newPage <= bookPages.length) {
-        setCurrentPage(newPage)
-      }
-    }
-  }
-
-  const adjustZoom = (increment: boolean) => {
-    if (increment && zoom < 150) {
-      setZoom((prev) => prev + 25)
-    } else if (!increment && zoom > 75) {
-      setZoom((prev) => prev - 25)
-    }
-  }
-
-  const nextPage = () => {
-    if (currentPage < bookPages.length) {
-      const newPage = currentPage + 1
-      setCurrentPage(newPage)
-      scrollToPage(newPage)
-    }
-  }
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      const newPage = currentPage - 1
-      setCurrentPage(newPage)
-      scrollToPage(newPage)
-    }
-  }
+  console.log("bookData=======", bookData)
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+
       {/* Breadcrumb */}
       <div className="bg-white border-b sticky top-0 z-30">
         <div className="container mx-auto px-4">
           <div className="flex items-center py-3 text-sm text-gray-600">
             <Link href="/" className="flex items-center gap-2 hover:text-blue-600 transition-colors">
               <ArrowLeft className="h-4 w-4" />
-              <span>মূলপাতা</span>
+              <span>{t("main_page")}</span>
             </Link>
             <span className="mx-2">/</span>
             <Link href="/books" className="hover:text-blue-600 transition-colors hidden sm:inline">
-              সকল বই
+              {t("all_books")}
             </Link>
             <span className="mx-2 hidden sm:inline">/</span>
-            <span className="text-gray-800 font-medium truncate">বইয়ের শিরোনাম {bookId}</span>
+            <span className="text-gray-800 font-medium truncate">
+              {locale === "bn" ? bookData?.title_bn : bookData?.title}
+            </span>
           </div>
         </div>
       </div>
@@ -248,21 +233,30 @@ export default function BookDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Image Gallery */}
           <div className="lg:col-span-4 xl:col-span-3">
-            <div className="sticky top-24 space-y-4">
-              <Card className="overflow-hidden cursor-pointer" onClick={() => setIsReading(true)}>
+            <div className="sticky top-24 space-y-2">
+              <Card
+                className="overflow-hidden cursor-pointer"
+                onClick={() => {
+                  if (bookData?.book_pdf) {
+                    setIsReading(true)
+                  }
+                }}
+              >
                 <CardContent className="p-3 sm:p-4">
-                  <div className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden max-w-[320px] sm:max-w-[280px] mx-auto group">
+                  <div className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden max-w-[380px] sm:max-w-[340px] mx-auto group">
                     <Image
-                      src={bookImages[selectedImage] || "/placeholder.svg"}
-                      alt="Book cover"
+                      src={selectedBookImage?.image || "/images/book-skeleton.jpg"}
+                      alt={selectedBookImage?.alt_text || "Book cover"}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       priority
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
-                        <BookOpen className="h-6 w-6 text-gray-800" />
-                      </div>
+                      {bookData?.book_pdf && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
+                          <BookOpen className="h-6 w-6 text-gray-800" />
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={(e) => {
@@ -282,28 +276,34 @@ export default function BookDetailPage() {
                     >
                       <ChevronRight className="h-3 w-3" />
                     </button>
-                    <Badge className="absolute top-2 left-2 bg-red-500 text-xs">২০% ছাড়</Badge>
                   </div>
-                  <div className="text-center mt-3">
-                    <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
-                      <BookOpen className="h-4 w-4" />
-                      পড়তে ক্লিক করুন
-                    </p>
-                  </div>
+                  {bookData?.book_pdf && (
+                    <div className="text-center mt-3">
+                      <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        {t("read_now")}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
               {/* Thumbnails */}
               <div className="flex gap-2 justify-center">
-                {bookImages.map((image, i) => (
+                {bookImages?.map((image: any, i: number) => (
                   <button
-                    key={i}
+                    key={image.id}
                     className={`relative aspect-[3/4] w-16 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === i ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
+                      selectedBookImage?.id === image.id ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
                     }`}
-                    onClick={() => setSelectedImage(i)}
+                    onClick={() => onSelectBookImage(image)}
                   >
-                    <Image src={image || "/placeholder.svg"} alt={`View ${i + 1}`} fill className="object-cover" />
+                    <Image
+                      src={image.image || "/images/book-skeleton.jpg"}
+                      alt={image.alt_text || "Book cover"}
+                      fill
+                      className="object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -313,90 +313,129 @@ export default function BookDetailPage() {
           {/* Product Details */}
           <div className="lg:col-span-8 xl:col-span-9">
             {/* Title and Author */}
-            <div className="mb-8 border-b pb-4">
-              <h1 className="text-2xl font-semibold mb-2">বইয়ের শিরোনাম {bookId}</h1>
-              <div className="flex flex-col gap-2">
-                <Link href="#" className="text-gray-700 hover:text-gray-900 font-medium">
-                  লেখক: হুমায়ূন আহমেদ
+            <div className="mb-6 pb-4 border-b">
+              <h1 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
+                {locale === "bn" ? bookData?.title_bn : bookData?.title}
+              </h1>
+              <div className="flex flex-col gap-3">
+                <Link href="#" className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  <span>{locale === "bn" ? bookData?.author?.name_bn : bookData?.author?.name}</span>
                 </Link>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4" />
-                    ))}
+                <div className="flex items-center flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${bookData?.rating > i ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-medium">{bookData?.rating}</span>
                   </div>
-                  <span>৮৫ রিভিউ</span>
-                  <span>•</span>
-                  <span>১,২৪৭ বার দেখা হয়েছে</span>
+                  <div className="flex items-center gap-4 text-gray-500">
+                    {bookData?.reviews_count > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-3.5 w-3.5" />
+                        {bookData?.reviews_count} রিভিউ
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Price and Stock */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-2xl font-semibold">৳{350 + Number.parseInt(bookId) * 10}</span>
-                <span className="text-gray-500 line-through">৳{400 + Number.parseInt(bookId) * 10}</span>
-                <Badge variant="outline">১৫% ছাড়</Badge>
+            <div className="mb-6 pb-4">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-green-600">৳{bookData?.discounted_price}</span>
+                  <span className="text-gray-400 line-through">৳{bookData?.price}</span>
+                </div>
+                {bookData?.discounted_price < bookData?.price && (
+                  <Badge className="bg-red-50 text-red-600 text-xs">
+                    {Math.round(((bookData?.price - bookData?.discounted_price) / bookData?.price) * 100)}%{" "}
+                    {t("discount")}
+                  </Badge>
+                )}
               </div>
-              <p className="text-sm text-gray-600">স্টকে আছে</p>
+              {bookData?.available_copies > 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                    {t("stock_available")}
+                  </Badge>
+                  <span className="text-gray-500">
+                    • {t("only")} {bookData?.available_copies} {t("t")} {t("book")} {t("available")}
+                  </span>
+                </div>
+              )}
+              {bookData?.available_copies === 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
+                    {t("stock_not_available")}
+                  </Badge>
+                </div>
+              )}
             </div>
 
             {/* Book Details */}
-            <div className="mb-8">
-              <h2 className="text-lg font-medium mb-4">বইয়ের বিবরণ</h2>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="mb-6 pb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {[
-                  { label: "প্রকাশক", value: "গার্ডিয়ান" },
-                  { label: "পৃষ্ঠা", value: "২৫০" },
-                  { label: "ভাষা", value: "বাংলা" },
-                  { label: "কভার", value: "পেপারব্যাক" },
-                  { label: "প্রকাশকাল", value: "জানুয়ারি ২০২৪" },
-                  { label: "ISBN", value: "978-984-XX-XXXX-X" }
+                  { label: t("publisher"), value: bookData?.publisher_name, icon: BookOpen },
+                  { label: t("page"), value: bookData?.pages, icon: BookOpen },
+                  { label: t("language"), value: bookData?.language, icon: BookOpen },
+                  { label: t("publication_date"), value: bookData?.published_date, icon: BookOpen },
                 ].map((info) => (
-                  <div key={info.label} className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">{info.label}</span>
-                    <span>{info.value}</span>
+                  <div key={info.label} className="flex items-center gap-2 py-1.5">
+                    <info.icon className="h-3.5 w-3.5 text-gray-400" />
+                    <span className="text-gray-500 min-w-[80px]">{info.label}:</span>
+                    <span className="font-medium text-gray-700">{info.value}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 mb-8">
-              <Button 
-                onClick={() => setIsReading(true)} 
-                className="flex-1"
-              >
-                <BookOpen className="mr-2 h-4 w-4" />
-                বই পড়ুন
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleWishlist}
-              >
-                <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
-              </Button>
-
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={shareBook}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Delivery Info */}
-            <div className="border rounded p-4">
-              <div className="flex items-center gap-3">
-                <div>
-                  <h3 className="font-medium mb-1">ডেলিভারি সময়</h3>
-                  <p className="text-sm text-gray-600">ঢাকায় ২৪ ঘন্টা</p>
-                  <p className="text-sm text-gray-600">ঢাকার বাইরে ৪৮-৭২ ঘন্টা</p>
+            <div className="mb-6 pb-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-gray-50 rounded-md px-2 py-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleQuantityChange(false)}
+                    disabled={quantity <= 1}
+                    className="h-7 w-7"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-8 text-center text-sm font-medium">{quantity}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleQuantityChange(true)}
+                    disabled={quantity >= availableStock}
+                    className="h-7 w-7"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
                 </div>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                  <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+                  কার্টে যোগ করুন
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleWishlist}
+                  className={`h-7 w-7 ${isWishlisted ? "text-red-500 border-red-500" : ""}`}
+                >
+                  <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-current" : ""}`} />
+                </Button>
+                <Button variant="outline" size="sm" onClick={shareBook} className="h-7 w-7 bg-transparent">
+                  <Share2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </div>
           </div>
@@ -407,7 +446,6 @@ export default function BookDetailPage() {
           <Card>
             <CardContent className="p-4 sm:p-6">
               <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">বিস্তারিত তথ্য</h3>
-
               <Tabs defaultValue="description" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg mb-4 sm:mb-6">
                   <TabsTrigger value="description" className="text-xs sm:text-sm font-medium rounded-md">
@@ -627,7 +665,6 @@ export default function BookDetailPage() {
                       <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">পূর্ববর্তী</span>
                     </Button>
-
                     <div className="flex gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <Button
@@ -641,7 +678,6 @@ export default function BookDetailPage() {
                         </Button>
                       ))}
                     </div>
-
                     <Button
                       variant="outline"
                       size="sm"
@@ -658,203 +694,295 @@ export default function BookDetailPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Related Books Section */}
-        <div className="mt-8 sm:mt-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">সম্পর্কিত বই</h2>
-            <Link href="/books" className="text-blue-600 hover:underline text-xs sm:text-sm font-medium">
-              সব বই দেখুন
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-            {relatedBooks.map((book) => (
-              <div key={book.id} className="group">
-                <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="aspect-[3/4] overflow-hidden cursor-pointer" onClick={() => setIsReading(true)}>
-                    <Image
-                      src={book.image || "/placeholder.svg"}
-                      alt={book.title}
-                      width={220}
-                      height={300}
-                      className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <CardContent className="p-2 sm:p-3">
-                    <Link href={`/books/${book.id}`}>
-                      <h3 className="font-medium text-xs sm:text-sm line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
-                        {book.title}
-                      </h3>
-                    </Link>
-                    <p className="text-xs text-gray-600 mb-2">{book.author}</p>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm font-bold text-green-600">৳{book.price}</p>
-                        <p className="text-xs text-gray-500 line-through">৳{book.originalPrice}</p>
-                      </div>
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-current" />
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Enhanced Book Reading Modal - PDF Style */}
       <Dialog open={isReading} onOpenChange={setIsReading}>
-        <DialogContent className="max-w-[95vw] w-full lg:max-w-6xl h-[90vh] md:h-[95vh] p-0 bg-gray-900">
-          <DialogHeader className="p-2 md:p-3 lg:p-4 border-b border-gray-700 bg-gray-800">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-sm md:text-base lg:text-lg font-semibold text-white truncate max-w-[150px] md:max-w-[300px]">
-                বইয়ের শিরোনাম {bookId}
+        <DialogContent className="max-w-full w-full sm:max-w-4xl md:max-w-6xl lg:max-w-7xl h-[90vh] md:h-[95vh] p-0 bg-white flex flex-col">
+          {/* Header */}
+          <DialogHeader className="p-3 md:p-4 border-b bg-gray-50 flex-shrink-0">
+            <div className="flex items-center justify-between gap-4">
+              <DialogTitle className="text-sm md:text-base lg:text-lg font-semibold text-gray-900 truncate flex-1">
+                {locale === "bn" ? bookData?.title_bn : bookData?.title}
               </DialogTitle>
-              <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3">
-                {/* Zoom Controls */}
-                <div className="hidden md:flex items-center gap-1 lg:gap-2 bg-gray-700 rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => adjustZoom(false)}
-                    disabled={zoom <= 75}
-                    className="text-white hover:bg-gray-600 h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 p-0"
-                  >
-                    <ZoomOut className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" />
-                  </Button>
-                  <span className="text-xs md:text-sm font-medium text-white min-w-[35px] md:min-w-[40px] lg:min-w-[50px] text-center">
-                    {zoom}%
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => adjustZoom(true)}
-                    disabled={zoom >= 150}
-                    className="text-white hover:bg-gray-600 h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 p-0"
-                  >
-                    <ZoomIn className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" />
-                  </Button>
-                </div>
-
-                {/* Page Navigation */}
-                <div className="flex items-center gap-1 md:gap-1.5 lg:gap-2 bg-gray-700 rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={prevPage}
-                    disabled={currentPage <= 1}
-                    className="text-white hover:bg-gray-600 h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 p-0"
-                  >
-                    <ChevronLeft className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" />
-                  </Button>
-                  <span className="text-xs md:text-sm font-medium text-white min-w-[50px] md:min-w-[60px] lg:min-w-[80px] text-center">
-                    {currentPage} / {bookPages.length}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={nextPage}
-                    disabled={currentPage >= bookPages.length}
-                    className="text-white hover:bg-gray-600 h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 p-0"
-                  >
-                    <ChevronRight className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
-
-          {/* PDF-like Scrolling Container */}
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-auto bg-gray-100 p-2 md:p-3 lg:p-4"
-            onScroll={handleScroll}
-            style={{ scrollBehavior: "smooth" }}
-          >
-            <div className="max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-3 md:space-y-4 lg:space-y-8">
-              {bookPages.map((page, index) => (
-                <div
-                  key={page.page}
-                  className="bg-white shadow-xl md:shadow-2xl rounded-lg overflow-hidden transition-all duration-300"
-                  style={{
-                    transform: `scale(${zoom / 100})`,
-                    transformOrigin: "top center",
-                    marginBottom: index < bookPages.length - 1 ? `${(zoom - 100) * 0.5}px` : "0",
-                  }}
-                >
-                  <div className="p-3 md:p-6 lg:p-8 min-h-[400px] md:min-h-[600px] lg:min-h-[800px] flex flex-col">
-                    {/* Page Header */}
-                    <div className="text-center mb-4 md:mb-6 lg:mb-8 pb-3 md:pb-4 border-b border-gray-200">
-                      <h2 className="text-base md:text-lg lg:text-2xl font-bold text-gray-800 mb-2">
-                        অধ্যায় {Math.ceil(page.page / 5)}
-                      </h2>
-                      <div className="w-12 md:w-16 lg:w-24 h-0.5 md:h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
-                    </div>
-
-                    {/* Page Content */}
-                    <div className="flex-1">
-                      <div className="prose prose-xs md:prose-sm lg:prose-lg max-w-none">
-                        <div className="whitespace-pre-line text-gray-800 leading-relaxed text-justify font-serif text-xs md:text-sm lg:text-base">
-                          {page.content}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Page Footer */}
-                    <div className="text-center mt-4 md:mt-6 lg:mt-8 pt-3 md:pt-4 lg:pt-6 border-t border-gray-200">
-                      <div className="flex items-center justify-between text-[10px] md:text-xs lg:text-sm">
-                        <div className="text-gray-500 truncate max-w-[80px] md:max-w-[120px] lg:max-w-[200px]">বইয়ের শিরোনাম {bookId}</div>
-                        <div className="font-medium text-gray-700">{page.page}</div>
-                        <div className="text-gray-500 truncate max-w-[80px] md:max-w-[120px] lg:max-w-[200px]">হুমায়ূন আহমেদ</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Reading Controls Footer */}
-          <div className="p-2 md:p-3 lg:p-4 border-t border-gray-700 bg-gray-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 md:gap-2 lg:gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 text-[10px] md:text-xs lg:text-sm h-7 md:h-8 lg:h-9"
-                >
-                  <BookOpen className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4 mr-1 md:mr-1.5 lg:mr-2" />
-                  <span className="hidden md:inline">বুকমার্ক</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 text-[10px] md:text-xs lg:text-sm h-7 md:h-8 lg:h-9"
-                >
-                  <Share2 className="h-3 w-3 md:h-3.5 md:w-3.5 lg:h-4 lg:w-4 mr-1 md:mr-1.5 lg:mr-2" />
-                  <span className="hidden md:inline">শেয়ার</span>
-                </Button>
-              </div>
-
-              <div className="text-[10px] md:text-xs lg:text-sm text-gray-400 bg-gray-700 px-2 md:px-3 lg:px-4 py-1 md:py-1.5 lg:py-2 rounded-lg">
-                📖 প্রিভিউ মোড
-              </div>
-
-              <Button
-                onClick={() => setIsReading(false)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] md:text-xs lg:text-sm h-7 md:h-8 lg:h-9"
-              >
+              <Button onClick={() => setIsReading(false)} variant="outline" size="sm" className="flex-shrink-0">
                 বন্ধ করুন
               </Button>
             </div>
+          </DialogHeader>
+
+          {/* PDF Viewer */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {bookData?.book_pdf ? (
+              <PDFViewer pdfUrl={bookData.book_pdf} />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-50">
+                <div className="text-center p-8">
+                  <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-4">PDF ফাইল উপলব্ধ নেই</p>
+                  <Button onClick={() => setIsReading(false)}>বন্ধ করুন</Button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+// Enhanced PDF Viewer Component
+const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [scale, setScale] = useState(1.0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pdfDoc, setPdfDoc] = useState<any>(null)
+
+  // Initialize PDF.js
+  useEffect(() => {
+    const initPDFJS = async () => {
+      try {
+        // Use dynamic import for PDF.js to avoid SSR issues
+        const pdfjsLib = await import("pdfjs-dist")
+
+        // Set worker source
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+        return pdfjsLib
+      } catch (err) {
+        console.error("Failed to load PDF.js:", err)
+        setError("PDF viewer could not be loaded")
+        return null
+      }
+    }
+
+    const loadPDF = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const pdfjsLib = await initPDFJS()
+        if (!pdfjsLib) return
+
+        const loadingTask = pdfjsLib.getDocument({
+          url: "https://33a6-103-220-206-188.ngrok-free.app/media/book_pdfs/cover-letter-sciit.pdf",
+          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
+          cMapPacked: true,
+        })
+
+        const pdf = await loadingTask.promise
+        setPdfDoc(pdf)
+        setTotalPages(pdf.numPages)
+        setCurrentPage(1)
+      } catch (err) {
+        console.error("Error loading PDF:", err)
+        setError("Failed to load PDF document")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (pdfUrl) {
+      loadPDF()
+    }
+  }, [pdfUrl])
+
+  // Render current page
+  useEffect(() => {
+    if (!pdfDoc || !containerRef.current) return
+
+    const renderPage = async () => {
+      try {
+        const page = await pdfDoc.getPage(currentPage)
+        const container = containerRef.current
+        if (!container) return
+
+        // Clear previous content
+        container.innerHTML = ""
+
+        // Calculate scale based on container width
+        const containerWidth = container.clientWidth - 40 // Account for padding
+        const viewport = page.getViewport({ scale: 1.0 })
+        const calculatedScale = Math.min(containerWidth / viewport.width, scale)
+
+        const scaledViewport = page.getViewport({ scale: calculatedScale })
+
+        // Create canvas
+        const canvas = document.createElement("canvas")
+        const context = canvas.getContext("2d")
+        if (!context) return
+
+        canvas.height = scaledViewport.height
+        canvas.width = scaledViewport.width
+        canvas.className = "mx-auto shadow-lg rounded-lg"
+
+        container.appendChild(canvas)
+
+        // Render page
+        const renderContext = {
+          canvasContext: context,
+          viewport: scaledViewport,
+        }
+
+        await page.render(renderContext).promise
+      } catch (err) {
+        console.error("Error rendering page:", err)
+        setError("Failed to render PDF page")
+      }
+    }
+
+    renderPage()
+  }, [pdfDoc, currentPage, scale])
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Re-render current page with new scale
+      if (pdfDoc && containerRef.current) {
+        const event = new Event("resize")
+        window.dispatchEvent(event)
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [pdfDoc])
+
+  const goToPage = (pageNum: number) => {
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum)
+    }
+  }
+
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.25, 3.0))
+  }
+
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.25, 0.5))
+  }
+
+  const downloadPDF = () => {
+    const link = document.createElement("a")
+    link.href = pdfUrl
+    link.download = "book.pdf"
+    link.click()
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">PDF লোড হচ্ছে...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full bg-gray-50">
+        <div className="text-center p-8">
+          <div className="text-red-500 mb-4">
+            <BookOpen className="h-16 w-16 mx-auto mb-2" />
+            <p className="font-medium">PDF লোড করতে সমস্যা হয়েছে</p>
+          </div>
+          <p className="text-gray-600 mb-4 text-sm">{error}</p>
+          <div className="space-y-2">
+            <Button onClick={downloadPDF} className="w-full">
+              <Download className="h-4 w-4 mr-2" />
+              PDF ডাউনলোড করুন
+            </Button>
+            <Button variant="outline" onClick={() => window.open(pdfUrl, "_blank")} className="w-full">
+              নতুন ট্যাবে খুলুন
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-gray-100">
+      {/* Controls */}
+      <div className="flex items-center justify-between p-3 bg-white border-b flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-2 text-sm">
+            <input
+              type="number"
+              value={currentPage}
+              onChange={(e) => goToPage(Number.parseInt(e.target.value) || 1)}
+              className="w-16 px-2 py-1 border rounded text-center"
+              min={1}
+              max={totalPages}
+            />
+            <span className="text-gray-600">/ {totalPages}</span>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={zoomOut}>
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+
+          <span className="text-sm text-gray-600 min-w-[60px] text-center">{Math.round(scale * 100)}%</span>
+
+          <Button variant="outline" size="sm" onClick={zoomIn}>
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+
+          <Button variant="outline" size="sm" onClick={downloadPDF}>
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* PDF Content */}
+      <div ref={containerRef} className="flex-1 overflow-auto p-4 bg-gray-100" style={{ minHeight: 0 }} />
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden flex items-center justify-between p-3 bg-white border-t">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="flex-1 mr-2"
+        >
+          পূর্ববর্তী
+        </Button>
+
+        <div className="text-sm text-gray-600 px-4">
+          {currentPage} / {totalPages}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="flex-1 ml-2"
+        >
+          পরবর্তী
+        </Button>
+      </div>
     </div>
   )
 }

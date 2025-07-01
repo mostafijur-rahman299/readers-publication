@@ -296,5 +296,25 @@
         "coming_soon": "Coming Soon...",
         "all_books": "All Books",
         "best_selling": "Best Seller"
+    },
+    "book_details": {
+        "main_page": "Main Page",
+        "all_books": "All Books",
+        "discount": "Discount",
+        "stock_available": "Stock Available",
+        "stock_not_available": "Stock Not Available",
+        "only": "Only",
+        "t": "",
+        "book": "Book",
+        "available": "Available",
+        "publisher": "Publisher",
+        "page": "Page",
+        "language": "Language",
+        "edition": "Edition",
+        "publication_date": "Publication Date",
+        "description": "Description",
+        "author": "Author",
+        "category": "Category",
+        "read_now": "Read Now"
     }
 }

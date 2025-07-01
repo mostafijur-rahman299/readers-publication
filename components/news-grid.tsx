@@ -104,7 +104,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
         )}
         
         {books.map((book) => (
-          <Link key={book.id} href={`/books/${book.id}`} className="group flex-none">
+          <Link key={book.id} href={`/books/${book.slug}`} className="group flex-none">
             <div className="relative h-[360px] w-56 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-md hover:-translate-y-1">
               <div className="relative h-[220px] w-full bg-gray-50">
                 <Image
