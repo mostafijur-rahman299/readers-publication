@@ -19,4 +19,5 @@ export const API_ENDPOINTS = {
   SPECIAL_PACKAGES: `${BACKEND_URL}/book/api/v1/special-packages/`,
   AUTHORS: `${BACKEND_URL}/author/api/v1/list/`,
   AUTHOR_DETAIL: (pk) => `${BACKEND_URL}/author/api/v1/detail/${pk}/`,
+  BOOK_PREVIEW_IMAGES: (book_id) => `${BACKEND_URL}/book/api/v1/previews/${book_id}/`,
 }

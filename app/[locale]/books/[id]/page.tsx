@@ -15,15 +15,11 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  ZoomIn,
-  ZoomOut,
   Edit,
-  Download,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useParams } from "next/navigation"
 import { Header } from "@/components/header"
@@ -31,23 +27,21 @@ import { Navigation } from "@/components/navigation"
 import useHttp from "@/hooks/useHttp"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 import { useLocale, useTranslations } from "next-intl"
+import BookPreviewModal from "../components/BookPreview"
 
 export default function BookDetailPage() {
   const { id } = useParams()
   const bookId = id as string
-  const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isReading, setIsReading] = useState(false)
   const [currentReviewPage, setCurrentReviewPage] = useState(1)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [bookData, setBookData] = useState<any>(null)
   const locale = useLocale()
   const [bookImages, setBookImages] = useState<any[]>([])
   const [selectedBookImage, setSelectedBookImage] = useState<any>(null)
   const t = useTranslations("book_details")
 
-  const availableStock = 25
   const reviewsPerPage = 3
 
   const { sendRequests: fetchBook, isLoading: isBookLoading } = useHttp()
@@ -145,17 +139,6 @@ export default function BookDetailPage() {
     },
   ]
 
-  // Related books
-  const relatedBooks = Array.from({ length: 6 }, (_, index) => ({
-    id: Number.parseInt(bookId) + index + 1,
-    title: `সম্পর্কিত বই ${Number.parseInt(bookId) + index + 1}`,
-    author: "হুমায়ূন আহমেদ",
-    price: 350 + index * 50,
-    originalPrice: 400 + index * 50,
-    image: `/placeholder.svg?height=300&width=220&text=Book${Number.parseInt(bookId) + index + 1}`,
-    rating: 4.5,
-  }))
-
   // Paginated reviews
   const totalReviews = allReviews.length
   const totalPages = Math.ceil(totalReviews / reviewsPerPage)
@@ -163,7 +146,7 @@ export default function BookDetailPage() {
   const currentReviews = allReviews.slice(startIndex, startIndex + reviewsPerPage)
 
   const handleQuantityChange = (increment: boolean) => {
-    if (increment && quantity < availableStock) {
+    if (increment && quantity < parseInt(bookData?.available_copies)) {
       setQuantity((prev) => prev + 1)
     } else if (!increment && quantity > 1) {
       setQuantity((prev) => prev - 1)
@@ -201,8 +184,6 @@ export default function BookDetailPage() {
     setSelectedBookImage(bookImages[prevIndex])
   }
 
-  console.log("bookData=======", bookData)
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -237,7 +218,7 @@ export default function BookDetailPage() {
               <Card
                 className="overflow-hidden cursor-pointer"
                 onClick={() => {
-                  if (bookData?.book_pdf) {
+                  if (bookData?.has_preview_images) {
                     setIsReading(true)
                   }
                 }}
@@ -252,7 +233,7 @@ export default function BookDetailPage() {
                       priority
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                      {bookData?.book_pdf && (
+                      {bookData?.has_preview_images && (
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
                           <BookOpen className="h-6 w-6 text-gray-800" />
                         </div>
@@ -277,7 +258,7 @@ export default function BookDetailPage() {
                       <ChevronRight className="h-3 w-3" />
                     </button>
                   </div>
-                  {bookData?.book_pdf && (
+                  {bookData?.has_preview_images && (
                     <div className="text-center mt-3">
                       <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
                         <BookOpen className="h-4 w-4" />
@@ -338,7 +319,7 @@ export default function BookDetailPage() {
                     {bookData?.reviews_count > 0 && (
                       <span className="flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" />
-                        {bookData?.reviews_count} রিভিউ
+                        {bookData?.reviews_count} {t("reviews")}
                       </span>
                     )}
                   </div>
@@ -415,7 +396,7 @@ export default function BookDetailPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleQuantityChange(true)}
-                    disabled={quantity >= availableStock}
+                    disabled={quantity >= parseInt(bookData?.available_copies)}
                     className="h-7 w-7"
                   >
                     <Plus className="h-3 w-3" />
@@ -445,34 +426,23 @@ export default function BookDetailPage() {
         <div className="mt-8 sm:mt-12">
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">বিস্তারিত তথ্য</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6"> {t("detailed_information")} </h3>
               <Tabs defaultValue="description" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg mb-4 sm:mb-6">
                   <TabsTrigger value="description" className="text-xs sm:text-sm font-medium rounded-md">
-                    বইয়ের বিবরণ
+                    {t("book_details")}
                   </TabsTrigger>
                   <TabsTrigger value="author" className="text-xs sm:text-sm font-medium rounded-md">
-                    লেখক সম্পর্কে
+                    {t("author_details")}
                   </TabsTrigger>
                   <TabsTrigger value="specifications" className="text-xs sm:text-sm font-medium rounded-md">
-                    স্পেসিফিকেশন
+                    {t("specifications")}
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="description" className="mt-0">
                   <div className="prose prose-gray max-w-none">
-                    <p className="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
-                      এই বইটি হুমায়ূন আহমেদের একটি অসাধারণ উপন্যাস। এটি একটি পরিবারের গল্প যারা তাদের জীবনের নানা সংকট মোকাবেলা করে।
-                      লেখক তার অনন্য শৈলীতে পাঠকদের নিয়ে যান এক অবিস্মরণীয় যাত্রায়, যেখানে হাসি, কান্না, আনন্দ এবং বেদনা সবই মিশে আছে।
-                    </p>
-                    <p className="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
-                      বইটির চরিত্রগুলো এতটাই জীবন্ত যে পাঠক নিজেকে তাদের মাঝে হারিয়ে ফেলেন। প্রতিটি পৃষ্ঠায় লেখক তার অসাধারণ কল্পনাশক্তি
-                      এবং ভাষার জাদু দিয়ে পাঠকদের মুগ্ধ করেন। এই বইটি বাংলা সাহিত্যের একটি মূল্যবান সম্পদ।
-                    </p>
-                    <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
-                      গল্পের প্রতিটি মোড়ে রয়েছে অপ্রত্যাশিত মোচড়, যা পাঠকদের শেষ পর্যন্ত বইয়ের সাথে আটকে রাখে। হুমায়ূন আহমেদের এই কাজটি
-                      তার সাহিত্যিক প্রতিভার আরেকটি উজ্জ্বল নিদর্শন।
-                    </p>
+                    {locale === "bn" ? bookData?.description_bn : bookData?.description}
                   </div>
                 </TabsContent>
 
@@ -480,36 +450,25 @@ export default function BookDetailPage() {
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div className="w-20 h-20 sm:w-32 sm:h-32 mx-auto sm:mx-0 flex-shrink-0">
                       <Image
-                        src="/placeholder.svg?height=128&width=128&text=Author"
-                        alt="হুমায়ূন আহমেদ"
+                        src={bookData?.author?.profile_picture || "/default_profile.png"}
+                        alt={bookData?.author?.name}
                         width={128}
                         height={128}
                         className="rounded-full object-cover w-full h-full"
                       />
                     </div>
                     <div className="flex-1 text-center sm:text-left">
-                      <h4 className="text-lg sm:text-xl font-bold mb-3">হুমায়ূন আহমেদ</h4>
+                      <h4 className="text-lg sm:text-xl font-bold mb-3">{locale === "bn" ? bookData?.author?.name_bn : bookData?.author?.name}</h4>
                       <p className="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
-                        হুমায়ূন আহমেদ (১৯৪৮-২০১২) বাংলাদেশের অন্যতম জনপ্রিয় ঔপন্যাসিক, ছোটগল্পকার, নাট্যকার এবং চলচ্চিত্র নির্মাতা। তিনি
-                        বাংলা সাহিত্যে আধুনিকতার পথপ্রদর্শক হিসেবে বিবেচিত।
+                        {locale === "bn" ? bookData?.author?.bio_bn : bookData?.author?.bio}
                       </p>
-                      <p className="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
-                        তার লেখা উপন্যাস, গল্প এবং নাটকে সাধারণ মানুষের জীবনযাত্রা, আবেগ এবং সংগ্রামের চিত্র ফুটে উঠেছে অসাধারণ দক্ষতায়। তিনি
-                        ২০০টিরও বেশি বই লিখেছেন এবং বাংলা সাহিত্যে অমর হয়ে আছেন।
-                      </p>
+                      
                       <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                        <Badge variant="secondary" className="text-xs">
-                          উপন্যাসিক
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          ছোটগল্পকার
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          নাট্যকার
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          চলচ্চিত্র নির্মাতা
-                        </Badge>
+                        {bookData?.author?.tags.map((tag: any) => (
+                          <Badge variant="secondary" className="text-xs" key={tag.id}>
+                            {locale === "bn" ? tag.name_bn : tag.name}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -521,12 +480,12 @@ export default function BookDetailPage() {
                       <h4 className="font-semibold mb-4 text-base sm:text-lg">বইয়ের তথ্য</h4>
                       <div className="space-y-3">
                         {[
-                          { label: "শিরোনাম", value: `বইয়ের শিরোনাম ${bookId}` },
-                          { label: "লেখক", value: "হুমায়ূন আহমেদ" },
-                          { label: "প্রকাশক", value: "গার্ডিয়ান পাবলিকেশন্স" },
-                          { label: "প্রকাশের তারিখ", value: "জানুয়ারি ২০২৪" },
-                          { label: "সংস্করণ", value: "প্রথম সংস্করণ" },
-                          { label: "ভাষা", value: "বাংলা" },
+                          { label: t("title"), value: locale === "bn" ? bookData?.title_bn : bookData?.title },
+                          { label: t("author"), value: locale === "bn" ? bookData?.author?.name_bn : bookData?.author?.name },
+                          { label: t("publisher"), value: locale === "bn" ? bookData?.publisher_name_bn : bookData?.publisher_name },
+                          { label: t("publisher_website_link"), value: bookData?.publisher_website_link ? <a href={bookData.publisher_website_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{bookData.publisher_website_link}</a> : "" },
+                          { label: t("publication_date"), value:  bookData?.published_date },
+                          
                         ].map((spec) => (
                           <div key={spec.label} className="flex justify-between py-2 border-b border-gray-100">
                             <span className="text-gray-600 font-medium text-sm">{spec.label}:</span>
@@ -539,12 +498,11 @@ export default function BookDetailPage() {
                       <h4 className="font-semibold mb-4 text-base sm:text-lg">ফিজিক্যাল তথ্য</h4>
                       <div className="space-y-3">
                         {[
-                          { label: "পৃষ্ঠা সংখ্যা", value: "২৫০" },
-                          { label: "কভার টাইপ", value: "পেপারব্যাক" },
-                          { label: "কাগজের ধরন", value: "অফসেট পেপার" },
-                          { label: "মাত্রা", value: "৫.৫ x ৮.৫ ইঞ্চি" },
-                          { label: "ওজন", value: "৩০০ গ্রাম" },
-                          { label: "ISBN", value: "978-1-234567-89-0" },
+                          { label: t("pages"), value: bookData?.pages ? bookData.pages.toString() : "" },
+                          { label: t("dimensions"), value: locale === "bn" ? bookData?.dimensions_bn : bookData?.dimensions || "" },
+                          { label: t("weight"), value: bookData?.weight ? `${locale === "bn" ? bookData.weight + " গ্রাম" : bookData.weight} ` : "" },
+                          { label: t("edition"), value: locale === "bn" ? bookData?.edition_bn : bookData?.edition || "" },
+                          { label: t("language"), value: bookData?.language },
                         ].map((spec) => (
                           <div key={spec.label} className="flex justify-between py-2 border-b border-gray-100">
                             <span className="text-gray-600 font-medium text-sm">{spec.label}:</span>
@@ -696,293 +654,15 @@ export default function BookDetailPage() {
         </div>
       </div>
 
-      {/* Enhanced Book Reading Modal - PDF Style */}
-      <Dialog open={isReading} onOpenChange={setIsReading}>
-        <DialogContent className="max-w-full w-full sm:max-w-4xl md:max-w-6xl lg:max-w-7xl h-[90vh] md:h-[95vh] p-0 bg-white flex flex-col">
-          {/* Header */}
-          <DialogHeader className="p-3 md:p-4 border-b bg-gray-50 flex-shrink-0">
-            <div className="flex items-center justify-between gap-4">
-              <DialogTitle className="text-sm md:text-base lg:text-lg font-semibold text-gray-900 truncate flex-1">
-                {locale === "bn" ? bookData?.title_bn : bookData?.title}
-              </DialogTitle>
-              <Button onClick={() => setIsReading(false)} variant="outline" size="sm" className="flex-shrink-0">
-                বন্ধ করুন
-              </Button>
-            </div>
-          </DialogHeader>
 
-          {/* PDF Viewer */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {bookData?.book_pdf ? (
-              <PDFViewer pdfUrl={bookData.book_pdf} />
-            ) : (
-              <div className="flex items-center justify-center h-full bg-gray-50">
-                <div className="text-center p-8">
-                  <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">PDF ফাইল উপলব্ধ নেই</p>
-                  <Button onClick={() => setIsReading(false)}>বন্ধ করুন</Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-
-// Enhanced PDF Viewer Component
-const PDFViewer = ({ pdfUrl }: { pdfUrl: string }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(0)
-  const [scale, setScale] = useState(1.0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [pdfDoc, setPdfDoc] = useState<any>(null)
-
-  // Initialize PDF.js
-  useEffect(() => {
-    const initPDFJS = async () => {
-      try {
-        // Use dynamic import for PDF.js to avoid SSR issues
-        const pdfjsLib = await import("pdfjs-dist")
-
-        // Set worker source
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-
-        return pdfjsLib
-      } catch (err) {
-        console.error("Failed to load PDF.js:", err)
-        setError("PDF viewer could not be loaded")
-        return null
-      }
-    }
-
-    const loadPDF = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const pdfjsLib = await initPDFJS()
-        if (!pdfjsLib) return
-
-        const loadingTask = pdfjsLib.getDocument({
-          url: "https://33a6-103-220-206-188.ngrok-free.app/media/book_pdfs/cover-letter-sciit.pdf",
-          cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
-          cMapPacked: true,
-        })
-
-        const pdf = await loadingTask.promise
-        setPdfDoc(pdf)
-        setTotalPages(pdf.numPages)
-        setCurrentPage(1)
-      } catch (err) {
-        console.error("Error loading PDF:", err)
-        setError("Failed to load PDF document")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    if (pdfUrl) {
-      loadPDF()
-    }
-  }, [pdfUrl])
-
-  // Render current page
-  useEffect(() => {
-    if (!pdfDoc || !containerRef.current) return
-
-    const renderPage = async () => {
-      try {
-        const page = await pdfDoc.getPage(currentPage)
-        const container = containerRef.current
-        if (!container) return
-
-        // Clear previous content
-        container.innerHTML = ""
-
-        // Calculate scale based on container width
-        const containerWidth = container.clientWidth - 40 // Account for padding
-        const viewport = page.getViewport({ scale: 1.0 })
-        const calculatedScale = Math.min(containerWidth / viewport.width, scale)
-
-        const scaledViewport = page.getViewport({ scale: calculatedScale })
-
-        // Create canvas
-        const canvas = document.createElement("canvas")
-        const context = canvas.getContext("2d")
-        if (!context) return
-
-        canvas.height = scaledViewport.height
-        canvas.width = scaledViewport.width
-        canvas.className = "mx-auto shadow-lg rounded-lg"
-
-        container.appendChild(canvas)
-
-        // Render page
-        const renderContext = {
-          canvasContext: context,
-          viewport: scaledViewport,
-        }
-
-        await page.render(renderContext).promise
-      } catch (err) {
-        console.error("Error rendering page:", err)
-        setError("Failed to render PDF page")
-      }
-    }
-
-    renderPage()
-  }, [pdfDoc, currentPage, scale])
-
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      // Re-render current page with new scale
-      if (pdfDoc && containerRef.current) {
-        const event = new Event("resize")
-        window.dispatchEvent(event)
-      }
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [pdfDoc])
-
-  const goToPage = (pageNum: number) => {
-    if (pageNum >= 1 && pageNum <= totalPages) {
-      setCurrentPage(pageNum)
-    }
-  }
-
-  const zoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.25, 3.0))
-  }
-
-  const zoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.25, 0.5))
-  }
-
-  const downloadPDF = () => {
-    const link = document.createElement("a")
-    link.href = pdfUrl
-    link.download = "book.pdf"
-    link.click()
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">PDF লোড হচ্ছে...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full bg-gray-50">
-        <div className="text-center p-8">
-          <div className="text-red-500 mb-4">
-            <BookOpen className="h-16 w-16 mx-auto mb-2" />
-            <p className="font-medium">PDF লোড করতে সমস্যা হয়েছে</p>
-          </div>
-          <p className="text-gray-600 mb-4 text-sm">{error}</p>
-          <div className="space-y-2">
-            <Button onClick={downloadPDF} className="w-full">
-              <Download className="h-4 w-4 mr-2" />
-              PDF ডাউনলোড করুন
-            </Button>
-            <Button variant="outline" onClick={() => window.open(pdfUrl, "_blank")} className="w-full">
-              নতুন ট্যাবে খুলুন
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex flex-col h-full bg-gray-100">
-      {/* Controls */}
-      <div className="flex items-center justify-between p-3 bg-white border-b flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage <= 1}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          <div className="flex items-center gap-2 text-sm">
-            <input
-              type="number"
-              value={currentPage}
-              onChange={(e) => goToPage(Number.parseInt(e.target.value) || 1)}
-              className="w-16 px-2 py-1 border rounded text-center"
-              min={1}
-              max={totalPages}
-            />
-            <span className="text-gray-600">/ {totalPages}</span>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={zoomOut}>
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-
-          <span className="text-sm text-gray-600 min-w-[60px] text-center">{Math.round(scale * 100)}%</span>
-
-          <Button variant="outline" size="sm" onClick={zoomIn}>
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-
-          <Button variant="outline" size="sm" onClick={downloadPDF}>
-            <Download className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* PDF Content */}
-      <div ref={containerRef} className="flex-1 overflow-auto p-4 bg-gray-100" style={{ minHeight: 0 }} />
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden flex items-center justify-between p-3 bg-white border-t">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage <= 1}
-          className="flex-1 mr-2"
-        >
-          পূর্ববর্তী
-        </Button>
-
-        <div className="text-sm text-gray-600 px-4">
-          {currentPage} / {totalPages}
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => goToPage(currentPage + 1)}
-          disabled={currentPage >= totalPages}
-          className="flex-1 ml-2"
-        >
-          পরবর্তী
-        </Button>
-      </div>
+      <BookPreviewModal 
+        open={isReading} 
+        onOpenChange={() => setIsReading(false)} 
+        bookId={bookData?.id} 
+        bookTitle={locale === "bn" ? bookData?.title_bn : bookData?.title} 
+        hasPreviewImages={bookData?.has_preview_images} 
+      />     
+      
     </div>
   )
 }

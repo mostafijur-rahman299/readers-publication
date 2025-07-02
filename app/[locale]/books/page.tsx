@@ -33,8 +33,8 @@ export default function BooksPage() {
     category: [],
     author: [],
     price: {
-      min: 0,
-      max: 0,
+      min: 0, 
+      max: 0, 
     },
   });
   const [sortBy, setSortBy] = useState<any>({

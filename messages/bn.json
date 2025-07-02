@@ -319,6 +319,34 @@
         "description": "বিবরণ",
         "author": "লেখক",
         "category": "বিষয়",
-        "read_now": "এখন পড়ুন"
+        "read_now": "এখন পড়ুন",
+        "reviews": "রিভিউ",
+        "book_details": "বইয়ের বিবরণ",
+        "author_details": "লেখক সম্পর্কে",
+        "specifications": "স্পেসিফিকেশন",
+        "detailed_information": "বিস্তারিত তথ্য",
+        "lang": "ভাষা",
+        "title": "শিরোনাম",
+        "published_date": "প্রকাশন তারিখ",
+        "available_copies": "উপলব্ধ কপি",
+        "pages": "পৃষ্ঠা সংখ্যা",
+        "cover_type": "কভার টাইপ",
+        "paper_type": "কাগজের ধরন",
+        "publisher_name": "প্রকাশকের নাম",
+        "publisher_website_link": "প্রকাশকের ওয়েবসাইট লিঙ্ক",
+        "translator": "অনুবাদক",
+        "dimensions": "মাত্রা",
+        "weight": "ওজন",
+        "isbn": "ISBN",
+
+        "preview": {
+            "first": "প্রথম",
+            "last": "শেষ",
+            "page": "পৃষ্ঠা",
+            "loading": "লোড হচ্ছে...",
+            "no_preview_images": "কোনো প্রিভিউ ছবি পাওয়া যায়নি।",
+            "close": "বন্ধ করুন",
+            "no_more_pages": "কোনো পৃষ্ঠা নেই"
+        }
     }
 }   
