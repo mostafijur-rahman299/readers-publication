@@ -20,4 +20,8 @@ export const API_ENDPOINTS = {
   AUTHORS: `${BACKEND_URL}/author/api/v1/list/`,
   AUTHOR_DETAIL: (pk) => `${BACKEND_URL}/author/api/v1/detail/${pk}/`,
   BOOK_PREVIEW_IMAGES: (book_id) => `${BACKEND_URL}/book/api/v1/previews/${book_id}/`,
+  BOOK_REVIEWS: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/${book_id}/`,
+  BOOK_REVIEW_DISTRIBUTION: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/distribution/${book_id}/`,
+  BOOK_RELATED: `${BACKEND_URL}/book/api/v1/related-books/`,
+  CART_LIST: `${BACKEND_URL}/cart/api/v1/list/`,
 }

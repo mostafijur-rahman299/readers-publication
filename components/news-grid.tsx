@@ -6,12 +6,14 @@ import { Star, ChevronLeft, ChevronRight, BookOpen, Clock, Heart } from "lucide-
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useRef, useState, useEffect } from "react"
+import { useLocale } from "next-intl"
 
 export function NewsGrid({ book_type, books }: { book_type: string, books: any[] }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [isScrollable, setIsScrollable] = useState(false)
+  const locale = useLocale()
 
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
@@ -104,7 +106,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
         )}
         
         {books.map((book) => (
-          <Link key={book.id} href={`/books/${book.slug}`} className="group flex-none">
+          <Link key={book.id} href={`/${locale}/books/${book.slug}`} className="group flex-none">
             <div className="relative h-[360px] w-56 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-md hover:-translate-y-1">
               <div className="relative h-[220px] w-full bg-gray-50">
                 <Image
@@ -145,10 +147,10 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
 
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold text-gray-900 leading-tight transition-colors group-hover:text-blue-600 line-clamp-2">
-                    {book.title}
+                    {locale === "bn" ? book.title_bn?.length > 20 ? book.title_bn.slice(0, 20) + "..." : book.title_bn : book.title?.length > 20 ? book.title.slice(0, 20) + "..." : book.title}
                   </h3>
                   <p className="text-xs font-medium text-gray-600 line-clamp-1">
-                    {book.author_name}
+                    {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
                   </p>
                 </div>
 

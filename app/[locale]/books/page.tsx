@@ -319,32 +319,73 @@ export default function BooksPage() {
                 )}
 
                 {books.length > 0 && books.map((book) => (
-                  <Link key={book.slug} href={`/books/${book.slug}`} className="group">
-                    <div className="mb-3 overflow-hidden rounded-md border border-gray-200 relative">
+                  <Link
+                    key={book.slug}
+                    href={`/books/${book.slug}`}
+                    className="group"
+                  >
+                    <div
+                      className="mb-3 overflow-hidden rounded-md border border-gray-200 relative flex flex-col items-center"
+                      style={{
+                        width: "180px",
+                        minWidth: "180px",
+                        maxWidth: "180px",
+                        height: "280px",
+                        minHeight: "280px",
+                        maxHeight: "280px",
+                        background: "#fff"
+                      }}
+                    >
                       {book.discounted_price && book.discounted_price < book.price && (
                         <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
                           {Math.round(((book.price - book.discounted_price) / book.price) * 100)}% OFF
                         </div>
                       )}
-                      <Image
-                        src={book.cover_image ? book.cover_image : "/images/book-skeleton.jpg"}
-                        alt={book.title}
-                        width={180}
-                        height={250}
-                        className="h-auto w-full transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="h-20 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-sm font-medium group-hover:text-teal-600 line-clamp-2">{locale === "bn" ? book.title_bn : book.title}</h3>
-                        <p className="text-xs text-gray-600 line-clamp-1">{locale === "bn" ? book.author_full_name_bn : book.author_full_name}</p>
+                      <div
+                        className="w-full flex items-center justify-center"
+                        style={{
+                          height: "200px",
+                          minHeight: "200px",
+                          maxHeight: "200px",
+                          background: "#f3f4f6",
+                          borderRadius: "0.375rem 0.375rem 0 0",
+                          overflow: "hidden"
+                        }}
+                      >
+                        <Image
+                          src={book.cover_image ? book.cover_image : "/images/book-skeleton.jpg"}
+                          alt={book.title}
+                          width={120}
+                          height={420}
+                          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                          
+                        />
                       </div>
-                      <div className="mt-1">
-                        {book.discounted_price && book.discounted_price < book.price ? (
-                          <p className="text-sm font-semibold text-teal-600">৳ {book.discounted_price} <span className="text-xs text-gray-600 line-through">৳ {book.price}</span></p>
-                        ) : (
-                          <p className="text-sm font-semibold text-teal-600">৳ {book.price}</p>
-                        )}
+                      <div className="flex-1 flex flex-col justify-between px-2 py-2 w-full" style={{height: "60px", minHeight: "60px"}}>
+                        <div>
+                          <h3 className="text-sm font-medium group-hover:text-teal-600 line-clamp-2">
+                            {locale === "bn"
+                              ? book.title_bn && book.title_bn.length > 20
+                                ? book.title_bn.slice(0, 20) + "..."
+                                : book.title_bn
+                              : book.title && book.title.length > 20
+                                ? book.title.slice(0, 20) + "..."
+                                : book.title}
+                          </h3>
+                          <p className="text-xs text-gray-600 line-clamp-1">
+                            {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+                          </p>
+                        </div>
+                        <div className="mt-1">
+                          {book.discounted_price && book.discounted_price < book.price ? (
+                            <p className="text-sm font-semibold text-teal-600">
+                              ৳ {book.discounted_price}{" "}
+                              <span className="text-xs text-gray-600 line-through">৳ {book.price}</span>
+                            </p>
+                          ) : (
+                            <p className="text-sm font-semibold text-teal-600">৳ {book.price}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Link>

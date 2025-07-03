@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
@@ -41,11 +41,21 @@ export default function BookDetailPage() {
   const [bookImages, setBookImages] = useState<any[]>([])
   const [selectedBookImage, setSelectedBookImage] = useState<any>(null)
   const t = useTranslations("book_details")
-
-  const reviewsPerPage = 3
-
+  const [bookReviewDistribution, setBookReviewDistribution] = useState<any>(null)
+  const { sendRequests: fetchBookReviewDistribution } = useHttp()
   const { sendRequests: fetchBook, isLoading: isBookLoading } = useHttp()
+  const { sendRequests: fetchBookReviews, isLoading: isBookReviewsLoading } = useHttp()
+  const [bookReviews, setBookReviews] = useState<any[]>([])
+  const [bookReviewsPagination, setBookReviewsPagination] = useState<any>(null)
+  const [relatedBooks, setRelatedBooks] = useState<any[]>([])
+  const { sendRequests: fetchRelatedBooks, isLoading: isRelatedBooksLoading } = useHttp()
 
+  // Carousel state for related books
+  const [relatedCarouselIndex, setRelatedCarouselIndex] = useState(0)
+  const relatedCarouselRef = useRef<HTMLDivElement>(null)
+  const RELATED_CAROUSEL_VISIBLE = 4
+
+  // Fetch book details
   useEffect(() => {
     fetchBook(
       {
@@ -55,116 +65,105 @@ export default function BookDetailPage() {
       },
       (res: any) => {
         setBookData(res)
-        setBookImages([
+        const images = [
           {
             image: res.cover_image,
             alt_text: res.title,
             id: "cover-image",
           },
-          ...res.book_images,
-        ])
-        setSelectedBookImage({
-          image: res.cover_image,
-          alt_text: res.title,
-          id: "cover-image",
-        })
+          ...(res.book_images || []),
+        ]
+        setBookImages(images)
+        setSelectedBookImage(images[0])
       },
     )
   }, [bookId])
 
-  // All reviews data
-  const allReviews = [
-    {
-      id: 1,
-      name: "আহমেদ হাসান",
-      date: "১০ মে, ২০২৪",
-      rating: 5,
-      comment: "এই বইটি পড়ে আমি খুব আনন্দিত। লেখকের ভাষা এবং গল্প বলার ধরন অসাধারণ। আমি এই বইটি সবাইকে পড়ার পরামর্শ দিব।",
-      verified: true,
-      helpful: 24,
-    },
-    {
-      id: 2,
-      name: "ফাতেমা বেগম",
-      date: "৮ মে, ২০২৪",
-      rating: 4,
-      comment: "বইটি খুব সুন্দর। গল্পের ধরন এবং চরিত্রগুলো জীবন্ত। তবে কয়েকটি জায়গায় আরও বিস্তারিত হতে পারত।",
-      verified: true,
-      helpful: 18,
-    },
-    {
-      id: 3,
-      name: "রহমান আলী",
-      date: "৫ মে, ২০২৪",
-      rating: 5,
-      comment: "অসাধারণ একটি বই। লেখকের কলমের জাদুতে মুগ্ধ হয়ে গেছি। প্রতিটি পৃষ্ঠা পড়তে পড়তে সময় কেটে যায়।",
-      verified: false,
-      helpful: 31,
-    },
-    {
-      id: 4,
-      name: "সালমা খাতুন",
-      date: "২ মে, ২০২৪",
-      rating: 4,
-      comment: "বইটি পড়তে ভালো লেগেছে। গল্পের বুনন চমৎকার এবং ভাষা সহজ। তবে শেষটা আরেকটু ভালো হতে পারত।",
-      verified: true,
-      helpful: 12,
-    },
-    {
-      id: 5,
-      name: "করিম উদ্দিন",
-      date: "২৮ এপ্রিল, ২০২৪",
-      rating: 5,
-      comment: "দুর্দান্ত! এই বইটি আমার সংগ্রহের একটি মূল্যবান সংযোজন। লেখকের অনন্য শৈলী এবং গভীর চিন্তাভাবনা প্রতিটি পাতায় ফুটে উঠেছে।",
-      verified: true,
-      helpful: 19,
-    },
-    {
-      id: 6,
-      name: "নাসির আহমেদ",
-      date: "২৫ এপ্রিল, ২০২৪",
-      rating: 4,
-      comment: "ভালো একটি বই। পড়তে পড়তে সময় কেটে যায়। লেখকের ভাষা সহজ এবং বোধগম্য।",
-      verified: false,
-      helpful: 8,
-    },
-    {
-      id: 7,
-      name: "রুমানা আক্তার",
-      date: "২০ এপ্রিল, ২০২৪",
-      rating: 5,
-      comment: "চমৎকার! হুমায়ূন আহমেদের লেখার জাদু এই বইতেও আছে। প্রতিটি চরিত্র জীবন্ত।",
-      verified: true,
-      helpful: 15,
-    },
-  ]
-
-  // Paginated reviews
-  const totalReviews = allReviews.length
-  const totalPages = Math.ceil(totalReviews / reviewsPerPage)
-  const startIndex = (currentReviewPage - 1) * reviewsPerPage
-  const currentReviews = allReviews.slice(startIndex, startIndex + reviewsPerPage)
-
-  const handleQuantityChange = (increment: boolean) => {
-    if (increment && quantity < parseInt(bookData?.available_copies)) {
-      setQuantity((prev) => prev + 1)
-    } else if (!increment && quantity > 1) {
-      setQuantity((prev) => prev - 1)
+  // Fetch related books
+  useEffect(() => {
+    if (bookData?.id) {
+      fetchRelatedBooks({
+        url_info: {
+          url: API_ENDPOINTS.BOOK_RELATED+ `?book_id=${bookData?.id}`,
+        },
+      }, (res: any) => {
+        setRelatedBooks(res)
+      })
     }
+  }, [bookData])
+
+  // Fetch review distribution
+  useEffect(() => {
+    if (bookData?.id) {
+      fetchBookReviewDistribution(
+        {
+          url_info: {
+            url: API_ENDPOINTS.BOOK_REVIEW_DISTRIBUTION(bookData?.id),
+          },
+        },
+        (res: any) => {
+          setBookReviewDistribution(res)
+        },
+      )
+    }
+  }, [bookData])
+
+  // Fetch paginated reviews
+  const fetchReviews = useCallback(
+    (page: number) => {
+      if (bookData?.id) {
+        fetchBookReviews(
+          {
+            url_info: {
+              url: API_ENDPOINTS.BOOK_REVIEWS(bookData?.id) + `?page=${page}`,
+            },
+          },
+          (res: any) => {
+            setBookReviews(res?.results || [])
+            setBookReviewsPagination({
+              total: res.count,
+              current_page: res.current_page,
+              page_range: res.page_range,
+              total_pages: res.total_pages,
+            })
+          }
+        )
+      }
+    },
+    [bookData, fetchBookReviews]
+  )
+
+  useEffect(() => {
+    if (bookData?.id) {
+      fetchReviews(currentReviewPage)
+    }
+  }, [bookData, currentReviewPage])
+
+  // Quantity change handler
+  const handleQuantityChange = (increment: boolean) => {
+    if (!bookData) return
+    const max = parseInt(bookData?.available_copies) || 1
+    setQuantity((prev) => {
+      if (increment) return prev < max ? prev + 1 : prev
+      return prev > 1 ? prev - 1 : prev
+    })
   }
 
+  // Image selection
   const onSelectBookImage = (image: any) => {
     setSelectedBookImage(image)
   }
 
+  // Wishlist toggle
   const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted)
+    setIsWishlisted((prev) => !prev)
   }
 
+  // Share book
   const shareBook = () => {
     if (navigator.share) {
       navigator.share({
-        title: `বইয়ের শিরোনাম ${bookId}`,
+        title: `${bookId}`,
         url: window.location.href,
       })
     } else {
@@ -172,16 +171,54 @@ export default function BookDetailPage() {
     }
   }
 
+  // Next/Prev image
   const nextImage = () => {
+    if (!bookImages.length) return
     const currentIndex = bookImages.findIndex((image) => image.id === selectedBookImage?.id)
     const nextIndex = (currentIndex + 1) % bookImages.length
     setSelectedBookImage(bookImages[nextIndex])
   }
 
   const prevImage = () => {
+    if (!bookImages.length) return
     const currentIndex = bookImages.findIndex((image) => image.id === selectedBookImage?.id)
     const prevIndex = (currentIndex - 1 + bookImages.length) % bookImages.length
     setSelectedBookImage(bookImages[prevIndex])
+  }
+
+  // Smooth scroll to reviews
+  const scrollToReviews = () => {
+    const el = document.getElementById("reviews-section")
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
+  // Carousel navigation for related books
+  const handleRelatedPrev = () => {
+    setRelatedCarouselIndex((prev) => Math.max(0, prev - RELATED_CAROUSEL_VISIBLE))
+  }
+  const handleRelatedNext = () => {
+    setRelatedCarouselIndex((prev) =>
+      Math.min(
+        Math.max(0, relatedBooks.length - RELATED_CAROUSEL_VISIBLE),
+        prev + RELATED_CAROUSEL_VISIBLE
+      )
+    )
+  }
+
+  // See all related books handler (navigate to all books page with filter, or just /books)
+  const handleSeeAllRelated = () => {
+    window.location.href = `/${locale}/books`
+  }
+
+  // --- Related Books Carousel Animation ---
+  // We'll use a translateX for smooth sliding
+  const getCarouselTranslate = () => {
+    // Each card is 220px wide (200px + 20px gap)
+    // If you change card width/gap, update this value
+    const CARD_WIDTH = 220
+    return `translateX(-${relatedCarouselIndex * CARD_WIDTH}px)`
   }
 
   return (
@@ -317,13 +354,30 @@ export default function BookDetailPage() {
                   </div>
                   <div className="flex items-center gap-4 text-gray-500">
                     {bookData?.reviews_count > 0 && (
-                      <span className="flex items-center gap-1">
+                      <button
+                        className="flex items-center gap-1 hover:underline focus:outline-none"
+                        onClick={scrollToReviews}
+                        type="button"
+                      >
                         <Eye className="h-3.5 w-3.5" />
                         {bookData?.reviews_count} {t("reviews")}
-                      </span>
+                      </button>
                     )}
                   </div>
                 </div>
+                {/* Book Categories */}
+                  {bookData?.categories?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {bookData?.categories.map((category: any) => (
+                        <span
+                          key={category.id}
+                          className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-medium"
+                        >
+                          {locale === "bn" ? category.name_bn : category.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -396,7 +450,7 @@ export default function BookDetailPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleQuantityChange(true)}
-                    disabled={quantity >= parseInt(bookData?.available_copies)}
+                    disabled={quantity >= parseInt(bookData?.available_copies || "1")}
                     className="h-7 w-7"
                   >
                     <Plus className="h-3 w-3" />
@@ -440,10 +494,13 @@ export default function BookDetailPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="description" className="mt-0">
-                  <div className="prose prose-gray max-w-none">
-                    {locale === "bn" ? bookData?.description_bn : bookData?.description}
-                  </div>
+                <TabsContent value="description" className="mt-0 m-10">
+                  <div
+                    className="prose prose-gray max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: locale === "bn" ? (bookData?.description_bn || "") : (bookData?.description || "")
+                    }}
+                  />
                 </TabsContent>
 
                 <TabsContent value="author" className="mt-0">
@@ -464,7 +521,7 @@ export default function BookDetailPage() {
                       </p>
                       
                       <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                        {bookData?.author?.tags.map((tag: any) => (
+                        {bookData?.author?.tags?.map((tag: any) => (
                           <Badge variant="secondary" className="text-xs" key={tag.id}>
                             {locale === "bn" ? tag.name_bn : tag.name}
                           </Badge>
@@ -477,7 +534,7 @@ export default function BookDetailPage() {
                 <TabsContent value="specifications" className="mt-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                      <h4 className="font-semibold mb-4 text-base sm:text-lg">বইয়ের তথ্য</h4>
+                      <h4 className="font-semibold mb-4 text-base sm:text-lg">{t("book_details")}</h4>
                       <div className="space-y-3">
                         {[
                           { label: t("title"), value: locale === "bn" ? bookData?.title_bn : bookData?.title },
@@ -485,7 +542,6 @@ export default function BookDetailPage() {
                           { label: t("publisher"), value: locale === "bn" ? bookData?.publisher_name_bn : bookData?.publisher_name },
                           { label: t("publisher_website_link"), value: bookData?.publisher_website_link ? <a href={bookData.publisher_website_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{bookData.publisher_website_link}</a> : "" },
                           { label: t("publication_date"), value:  bookData?.published_date },
-                          
                         ].map((spec) => (
                           <div key={spec.label} className="flex justify-between py-2 border-b border-gray-100">
                             <span className="text-gray-600 font-medium text-sm">{spec.label}:</span>
@@ -495,7 +551,7 @@ export default function BookDetailPage() {
                       </div>
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-4 text-base sm:text-lg">ফিজিক্যাল তথ্য</h4>
+                      <h4 className="font-semibold mb-4 text-base sm:text-lg">{t("physical_details")}</h4>
                       <div className="space-y-3">
                         {[
                           { label: t("pages"), value: bookData?.pages ? bookData.pages.toString() : "" },
@@ -519,131 +575,154 @@ export default function BookDetailPage() {
         </div>
 
         {/* Paginated Reviews Section */}
-        <div className="mt-8">
+        <div className="mt-8" id="reviews-section">
           <Card>
             <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold">পাঠকদের রিভিউ</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold">{t("reader_reviews")}</h2>
                 <div className="flex items-center gap-2">
                   <div className="flex text-yellow-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
+                      <Star key={i} className={`h-4 w-4 sm:h-5 sm:w-5 fill-current ${bookData?.rating > i ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`} />
                     ))}
                   </div>
-                  <span className="font-semibold text-sm sm:text-base">৪.৮</span>
-                  <span className="text-gray-600 text-xs sm:text-sm">({totalReviews} রিভিউ)</span>
+                  <span className="font-semibold text-sm sm:text-base">{bookData?.rating}</span>
+                  <span className="text-gray-600 text-xs sm:text-sm">({bookData?.rating_count || 0} {t("reviews")})</span>
                 </div>
               </div>
 
               {/* Rating Breakdown */}
               <div className="mb-8">
-                <h3 className="font-semibold mb-4 text-sm sm:text-base">রেটিং বিতরণ</h3>
+                <h3 className="font-semibold mb-4 text-sm sm:text-base">{t("rating_distribution")}</h3>
                 <div className="space-y-2">
-                  {[
-                    { stars: 5, count: 52, percentage: 61 },
-                    { stars: 4, count: 20, percentage: 24 },
-                    { stars: 3, count: 8, percentage: 9 },
-                    { stars: 2, count: 3, percentage: 4 },
-                    { stars: 1, count: 2, percentage: 2 },
-                  ].map((rating) => (
-                    <div key={rating.stars} className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 w-10 sm:w-12">
-                        <span className="text-xs sm:text-sm">{rating.stars}</span>
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = bookReviewDistribution?.[star.toString()] || 0;
+                    const total = bookReviewDistribution?.total || 0;
+                    const percentage = total > 0 ? (count / total) * 100 : 0;
+
+                    return (
+                      <div key={star} className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 w-10 sm:w-12">
+                          <span className="text-xs sm:text-sm">{star}</span>
+                          <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                        </div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs sm:text-sm text-gray-600 w-6 sm:w-8">{count}</span>
                       </div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${rating.percentage}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-xs sm:text-sm text-gray-600 w-6 sm:w-8">{rating.count}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Individual Reviews */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-base sm:text-lg">সকল রিভিউ</h3>
+                  <h3 className="font-semibold text-base sm:text-lg">{t("all_reviews")}</h3>
                   <div className="text-xs sm:text-sm text-gray-600">
-                    পৃষ্ঠা {currentReviewPage} / {totalPages}
+                    {t("page")} {bookReviewsPagination?.current_page} / {bookReviewsPagination?.total_pages}
                   </div>
                 </div>
 
-                {currentReviews.map((review) => (
+                {bookReviews.map((review: any) => (
                   <div key={review.id} className="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 gap-2">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-                          {review.name.charAt(0)}
+                          {review?.user_details?.name?.charAt(0)}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-gray-800 text-sm sm:text-base">{review.name}</p>
-                            {review.verified && (
-                              <Badge className="bg-green-100 text-green-800 text-xs px-2 py-0.5">যাচাইকৃত</Badge>
-                            )}
+                            <p className="font-semibold text-gray-800 text-sm sm:text-base">{review?.user_details?.name}</p>
                           </div>
-                          <p className="text-xs text-gray-500">{review.date}</p>
+                          <p className="text-xs text-gray-500">{review?.created_at}</p>
                         </div>
                       </div>
                       <div className="flex text-yellow-400 ml-11 sm:ml-0">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-3 w-3 sm:h-4 sm:w-4 ${i < review.rating ? "fill-current" : "text-gray-300"}`}
+                            className={`h-3 w-3 sm:h-4 sm:w-4 ${i < review?.rating ? "fill-current" : "text-gray-300"}`}
                           />
                         ))}
                       </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mb-3">{review.comment}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <button className="hover:text-blue-600 transition-colors duration-200 flex items-center gap-1">
-                        <span>👍</span>
-                        সহায়ক ({review.helpful})
-                      </button>
-                      <button className="hover:text-blue-600 transition-colors duration-200">উত্তর দিন</button>
-                      <button className="hover:text-blue-600 transition-colors duration-200">রিপোর্ট করুন</button>
-                    </div>
+                    <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mb-3">{review?.review}</p>
                   </div>
                 ))}
 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {bookReviewsPagination?.total_pages > 1 && (
                   <div className="flex items-center justify-center gap-2 pt-6">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentReviewPage((prev) => Math.max(prev - 1, 1))}
+                      onClick={() => {
+                        if (currentReviewPage > 1) {
+                          setCurrentReviewPage(currentReviewPage - 1)
+                        }
+                      }}
                       disabled={currentReviewPage === 1}
                       className="text-xs sm:text-sm"
                     >
                       <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">পূর্ববর্তী</span>
+                      <span className="hidden sm:inline">{t("previous_page")}</span>
                     </Button>
                     <div className="flex gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentReviewPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentReviewPage(page)}
-                          className="w-8 h-8 p-0 text-xs"
-                        >
-                          {page}
-                        </Button>
-                      ))}
+                      {(() => {
+                        // Only show three pages at a time: current, previous, next
+                        const totalPages = bookReviewsPagination?.total_pages;
+                        const current = currentReviewPage;
+                        let start = Math.max(1, current - 1);
+                        let end = Math.min(totalPages, current + 1);
+
+                        // Always show three if possible
+                        if (end - start < 2) {
+                          if (start === 1) {
+                            end = Math.min(start + 2, totalPages);
+                          } else if (end === totalPages) {
+                            start = Math.max(1, end - 2);
+                          }
+                        }
+
+                        const visiblePages = [];
+                        for (let i = start; i <= end; i++) {
+                          visiblePages.push(i);
+                        }
+
+                        return visiblePages.map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentReviewPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              if (currentReviewPage !== page) {
+                                setCurrentReviewPage(page)
+                              }
+                            }}
+                            className="w-8 h-8 p-0 text-xs"
+                          >
+                            {page}
+                          </Button>
+                        ));
+                      })()}
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentReviewPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentReviewPage === totalPages}
+                      onClick={() => {
+                        if (currentReviewPage < bookReviewsPagination?.total_pages) {
+                          setCurrentReviewPage(currentReviewPage + 1)
+                        }
+                      }}
+                      disabled={currentReviewPage === bookReviewsPagination?.total_pages}
                       className="text-xs sm:text-sm"
                     >
-                      <span className="hidden sm:inline">পরবর্তী</span>
+                      <span className="hidden sm:inline">{t("next_page")}</span>
                       <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
@@ -652,8 +731,189 @@ export default function BookDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
 
+        {/* Related Books Carousel */}
+        {relatedBooks && relatedBooks.length > 0 && (
+          <div className="mt-8">
+            <Card>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold">{t("related_books")}</h3>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="text-blue-600 px-2 py-1"
+                    onClick={handleSeeAllRelated}
+                  >
+                    {t("see_all")}
+                  </Button>
+                </div>
+                <div className="relative">
+                  {/* Responsive carousel: scrolls 1 at a time on mobile, 4 at a time on desktop */}
+                  <button
+                    aria-label="Previous"
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        setRelatedCarouselIndex((prev) => Math.max(prev - 1, 0))
+                      } else {
+                        setRelatedCarouselIndex((prev) => Math.max(prev - RELATED_CAROUSEL_VISIBLE, 0))
+                      }
+                    }}
+                    disabled={relatedCarouselIndex === 0}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border rounded-full transition-all ${relatedCarouselIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"}`}
+                    style={{
+                      display:
+                        relatedBooks.length > (typeof window !== "undefined" && window.innerWidth < 640 ? 1 : RELATED_CAROUSEL_VISIBLE)
+                          ? "block"
+                          : "none",
+                    }}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div
+                    className="overflow-hidden"
+                    style={{
+                      marginLeft:
+                        relatedBooks.length > (typeof window !== "undefined" && window.innerWidth < 640 ? 1 : RELATED_CAROUSEL_VISIBLE)
+                          ? "2.5rem"
+                          : 0,
+                      marginRight:
+                        relatedBooks.length > (typeof window !== "undefined" && window.innerWidth < 640 ? 1 : RELATED_CAROUSEL_VISIBLE)
+                          ? "2.5rem"
+                          : 0,
+                    }}
+                  >
+                    <div
+                      className="flex gap-5 pb-2 transition-transform duration-500 ease-in-out"
+                      ref={relatedCarouselRef}
+                      style={{
+                        transform: (() => {
+                          // Responsive: 1 at a time on mobile, 4 at a time on desktop
+                          const cardWidth = 200 + 20; // 200px card + 20px gap
+                          const visible = typeof window !== "undefined" && window.innerWidth < 640 ? 1 : RELATED_CAROUSEL_VISIBLE;
+                          return `translateX(-${relatedCarouselIndex * cardWidth}px)`;
+                        })(),
+                        willChange: "transform",
+                      }}
+                    >
+                      {relatedBooks.map((book: any, idx: number) => {
+                        // Calculate discount percentage if applicable
+                        const hasDiscount =
+                          book.discounted_price &&
+                          parseFloat(book.discounted_price) < parseFloat(book.price)
+                        const discountPercent = hasDiscount
+                          ? Math.round(
+                              (1 -
+                                parseFloat(book.discounted_price) /
+                                  parseFloat(book.price)) *
+                                100
+                            )
+                          : 0
+
+                        return (
+                          <div
+                            key={book.id}
+                            className="min-w-[230px] max-w-[230px] flex-shrink-0 bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 relative border border-gray-100"
+                            style={{
+                              width: "200px",
+                            }}
+                          >
+                            <Link href={`/${locale}/books/${book.slug}`} className="block h-full">
+                              <div className="aspect-[3/4] w-full bg-gray-100 rounded-t-xl flex items-center justify-center overflow-hidden cursor-pointer relative" style={{height: "200px", minHeight: "200px", maxHeight: "200px"}}>
+                                <img
+                                  src={book.cover_image || "/images/book-skeleton.jpg"}
+                                  alt={locale === "bn" ? book.title_bn : book.title}
+                                  className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                                />
+                                {hasDiscount && (
+                                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                                    -{discountPercent}%
+                                  </span>
+                                )}
+                              </div>
+                              <div className="p-3">
+                                <div className="font-semibold text-base truncate mb-1">
+                                  {locale === "bn" ? book.title_bn?.length > 20 ? book.title_bn.slice(0, 20) + "..." : book.title_bn : book.title?.length > 20 ? book.title.slice(0, 20) + "..." : book.title}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate mb-1">
+                                  {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+                                </div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {book.rating ? Number(book.rating).toFixed(1) : "0.0"}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    ({book.rating_count || 0})
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-2">
+                                  {hasDiscount ? (
+                                    <>
+                                      <span className="text-base font-bold text-red-600">
+                                        {parseFloat(book.discounted_price).toLocaleString()}৳
+                                      </span>
+                                      <span className="text-xs line-through text-gray-400">
+                                        {parseFloat(book.price).toLocaleString()}৳
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-base font-bold text-gray-800">
+                                      {parseFloat(book.price).toLocaleString()}৳
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <button
+                    aria-label="Next"
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.innerWidth < 640) {
+                        setRelatedCarouselIndex((prev) =>
+                          Math.min(prev + 1, relatedBooks.length - 1)
+                        )
+                      } else {
+                        setRelatedCarouselIndex((prev) =>
+                          Math.min(
+                            prev + RELATED_CAROUSEL_VISIBLE,
+                            Math.max(relatedBooks.length - RELATED_CAROUSEL_VISIBLE, 0)
+                          )
+                        )
+                      }
+                    }}
+                    disabled={
+                      (typeof window !== "undefined" && window.innerWidth < 640)
+                        ? relatedCarouselIndex >= relatedBooks.length - 1
+                        : relatedCarouselIndex + RELATED_CAROUSEL_VISIBLE >= relatedBooks.length
+                    }
+                    className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border rounded-full shadow p-1.5 transition-all ${
+                      (typeof window !== "undefined" && window.innerWidth < 640
+                        ? relatedCarouselIndex >= relatedBooks.length - 1
+                        : relatedCarouselIndex + RELATED_CAROUSEL_VISIBLE >= relatedBooks.length)
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-gray-100"
+                    }`}
+                    style={{
+                      display:
+                        relatedBooks.length > (typeof window !== "undefined" && window.innerWidth < 640 ? 1 : RELATED_CAROUSEL_VISIBLE)
+                          ? "block"
+                          : "none",
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
 
       <BookPreviewModal 
         open={isReading} 
@@ -662,7 +922,6 @@ export default function BookDetailPage() {
         bookTitle={locale === "bn" ? bookData?.title_bn : bookData?.title} 
         hasPreviewImages={bookData?.has_preview_images} 
       />     
-      
     </div>
   )
 }

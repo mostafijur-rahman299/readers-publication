@@ -2,25 +2,22 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { icons, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ProfileDropdown } from "@/components/profile-dropdown"
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { FaHeadphones, FaGift, FaShoppingCart } from "react-icons/fa";
-import { useEffect, useState } from 'react';
 import { useSelector } from "react-redux";
 
 export function Header() {
   const t = useTranslations('header');
   const router = useRouter();
   const pathname = usePathname();
-  const [showLanguageSwitcher, setShowLanguageSwitcher] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const { isAuthenticated } = useSelector((state: any) => state.user);
+  const locale = useLocale()
 
-  const currentLocale = pathname.split('/')[1];
+  const currentLocale = locale;
   const restOfPath = pathname.split('/').slice(2).join('/');
 
   const changeLanguage = (lang: string) => {
@@ -28,24 +25,7 @@ export function Header() {
     router.push(newPath);
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY > lastScrollY) {
-        // Scrolling down
-        setShowLanguageSwitcher(false);
-      } else {
-        // Scrolling up
-        setShowLanguageSwitcher(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  const cartCount = 10;
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -123,8 +103,13 @@ export function Header() {
               className="group flex flex-col items-center transition-transform hover:scale-105"
               aria-label={t('cart')}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 p-1.5 text-brand-600 transition-colors group-hover:bg-brand-100">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 p-1.5 text-brand-600 transition-colors group-hover:bg-brand-100">
                 <FaShoppingCart />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold leading-none shadow">
+                    {cartCount}
+                  </span>
+                )}
               </div>
               <span className="mt-1 text-xs font-medium">{t('cart')}</span>
             </Link>
