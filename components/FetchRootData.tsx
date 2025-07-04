@@ -7,6 +7,7 @@ import { setIsAuthenticated } from "@/store/userSlice"
 import { useDispatch } from "react-redux"
 import useHttp from "@/hooks/useHttp"
 import { setGeneralData } from "@/store/generalData"
+import { setCartCount } from "@/store/cart"
 
 function FetchRootData() {
     const { sendRequests: fetchGeneralData } = useHttp()
@@ -24,6 +25,7 @@ function FetchRootData() {
         }, (res: any) => {
           dispatch(setUserInfo(res))
           dispatch(setIsAuthenticated(true))
+          dispatch(setCartCount(res.cart_count))
         })
       }
 

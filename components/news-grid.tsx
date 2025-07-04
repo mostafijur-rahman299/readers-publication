@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Star, ChevronLeft, ChevronRight, BookOpen, Clock, Heart } from "lucide-react"
+import { Star, ChevronLeft, ChevronRight, BookOpen, Clock, ShoppingCart } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useRef, useState, useEffect } from "react"
@@ -96,7 +96,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
-          WebkitScrollbar: { display: "none" },
+          // Remove WebkitScrollbar property to fix lint error
         }}
       >
         {books.length === 0 && (
@@ -126,6 +126,18 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
                   </Badge>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                {/* Cart Icon Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 bottom-2 z-10 bg-white/80 hover:bg-white rounded-full shadow group-hover:scale-110 transition-transform"
+                  aria-label="Add to cart"
+                  // onClick handler can be added here for cart functionality
+                  tabIndex={-1}
+                  type="button"
+                >
+                  <ShoppingCart className="h-5 w-5 text-blue-600" />
+                </Button>
               </div>
 
               <div className="p-3 space-y-2">
@@ -139,10 +151,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
                     ))}
                     <span className="ml-1 text-xs text-gray-500">{book.rating}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Heart className="h-3.5 w-3.5" />
-                    <BookOpen className="h-3.5 w-3.5" />
-                  </div>
+                  {/* Removed Heart and BookOpen icons, only show Cart icon above */}
                 </div>
 
                 <div className="space-y-1">

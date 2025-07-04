@@ -24,8 +24,7 @@ export function Header() {
     const newPath = `/${lang}/${restOfPath}`;
     router.push(newPath);
   };
-
-  const cartCount = 10;
+  const cartCount = useSelector((state: any) => state.cart.cart_count);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">

@@ -30,7 +30,6 @@ export default function Home() {
 	const t = useTranslations("home");
 	const [categories, setCategories] = useState<any[]>([]);
 	const [carouselItems, setCarouselItems] = useState<any[]>([]);
-	const [advertisementItems, setAdvertisementItems] = useState<any[]>([]);
 	const { sendRequests: fetchCategories, isLoading } = useHttp();
 	const { sendRequests: fetchCarousel, isLoading: isCarouselLoading } =
 		useHttp();
@@ -65,11 +64,7 @@ export default function Home() {
 				},
 			},
 			(res: any) => {
-				setCarouselItems(res.filter((item: any) => !item.is_advertise));
-				setAdvertisementItems(
-					res.filter((item: any) => item.is_advertise),
-				);
-				console.log(res);
+				setCarouselItems(res);
 			},
 		);
 	}, []);

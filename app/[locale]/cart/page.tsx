@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ShoppingCart, Trash2, Plus, Minus, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -17,9 +17,11 @@ export default function CartPage() {
   const locale = useLocale()
   const generalData = useSelector((state: any) => state.generalData)
   const [selected, setSelected] = useState<number[]>([])
-  const { cartItems, updateQuantity, removeFromCart } = useCart()
+  const { cartItems, updateQuantityAuthUser, removeFromCartAuthUser, updateQuantityUnAuthUser, removeFromCartUnAuthUser, fetchCartItemsAuthUser, fetchCartItemsUnAuthUser } = useCart()
   const allSelected = selected.length === cartItems.length && cartItems.length > 0
   const router = useRouter()
+  const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated) 
+
 
   const DELIVERY_CHARGE = generalData?.delivery_charge || 0
 
@@ -41,6 +43,31 @@ export default function CartPage() {
 
   const totalSavings = originalSubtotal - subtotal
   const total = subtotal + (selected.length > 0 ? DELIVERY_CHARGE : 0)
+
+  const handleUpdateQuantity = async (cartItemId: number | string, newQuantity: number) => {
+    if (isAuthenticated) {
+      await updateQuantityAuthUser(cartItemId, newQuantity)
+    } else {
+      await updateQuantityUnAuthUser(cartItemId, newQuantity)
+    }
+  }
+
+  const handleRemoveFromCart = async (cartItemId: number | string) => {
+
+    if (isAuthenticated) {
+      await removeFromCartAuthUser(cartItemId)
+    } else {
+      await removeFromCartUnAuthUser(cartItemId)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCartItemsAuthUser()
+    } else {
+      fetchCartItemsUnAuthUser()
+    }
+  }, [isAuthenticated])
 
   return (
     <div className="min-h-screen">
@@ -173,7 +200,7 @@ export default function CartPage() {
                                       size="sm"
                                       variant="ghost"
                                       className="h-8 w-8 rounded-lg hover:bg-orange-100 p-0 text-orange-600"
-                                      onClick={() => updateQuantity(item.uuid, item.quantity - 1)}
+                                      onClick={() => handleUpdateQuantity(item.uuid, item.quantity - 1)}
                                       disabled={item.quantity <= 1}
                                     >
                                       <Minus className="h-4 w-4" />
@@ -185,7 +212,7 @@ export default function CartPage() {
                                       size="sm"
                                       variant="ghost"
                                       className="h-8 w-8 rounded-lg hover:bg-orange-100 p-0 text-orange-600"
-                                      onClick={() => updateQuantity(item.uuid, item.quantity + 1)}
+                                      onClick={() => handleUpdateQuantity(item.uuid, item.quantity + 1)}
                                     >
                                       <Plus className="h-4 w-4" />
                                     </Button>
@@ -209,7 +236,7 @@ export default function CartPage() {
                                   variant="ghost"
                                   size="sm"
                                   className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg"
-                                  onClick={() => removeFromCart(item.uuid)}
+                                  onClick={() => handleRemoveFromCart(item.uuid)}
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   <span className="text-sm">{t("remove") || "Remove"}</span>
