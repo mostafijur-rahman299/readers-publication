@@ -49,11 +49,11 @@ export function MainCarousel({ carouselItems, isLoading }: { carouselItems: any[
               className="h-full w-full object-cover"
               priority={index === 0}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div className="absolute bottom-0 left-0 p-6 text-white">
+            {(slide.title || slide.subtitle) && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>}
+            {(slide.title || slide.subtitle) && <div className="absolute bottom-0 left-0 p-6 text-white">
               <h2 className="mb-2 text-2xl font-bold">{locale === "bn" && slide.title_bn ? slide.title_bn : slide.title}</h2>
               <p className="text-lg">{locale === "bn" && slide.subtitle_bn ? slide.subtitle_bn : slide.subtitle}</p>
-            </div>
+            </div>}
           </div>
         ))}
       </div>

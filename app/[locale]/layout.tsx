@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation';
 import { routing } from "@/i18n/routing"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Providers } from "@/utils/providers"
-import FetchUserData from "@/components/UserInfo"
+import FetchRootData from "@/components/FetchRootData"
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -53,7 +53,7 @@ export default async function RootLayout({
             <NextIntlClientProvider messages={messages} locale={locale}>
               <Providers>
                 <div className="relative flex min-h-screen flex-col">
-                  <FetchUserData />
+                  <FetchRootData />
                   <main className="flex-1">{children}</main>
                   <SiteFooter />
                 </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { CircleNav } from "@/components/circle-nav";
 import { MainCarousel } from "@/components/main-carousel";
@@ -14,8 +13,7 @@ import { useEffect, useState, Suspense } from "react";
 import useHttp from "@/hooks/useHttp";
 import { API_ENDPOINTS } from "@/constants/apiEnds";
 import { useTranslations } from "next-intl";
-import { useDispatch, useSelector } from "react-redux";
-import { setGeneralData } from "@/store/generalData";
+import { useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 
 // Dynamic imports for better code splitting
@@ -29,7 +27,6 @@ const DynamicNewsGrid = dynamic(
 );
 
 export default function Home() {
-	const dispatch = useDispatch();
 	const t = useTranslations("home");
 	const [categories, setCategories] = useState<any[]>([]);
 	const [carouselItems, setCarouselItems] = useState<any[]>([]);
@@ -37,9 +34,8 @@ export default function Home() {
 	const { sendRequests: fetchCategories, isLoading } = useHttp();
 	const { sendRequests: fetchCarousel, isLoading: isCarouselLoading } =
 		useHttp();
-	const { sendRequests: fetchGeneralData } = useHttp();
 	const generalData = useSelector(
-		(state: any) => state.generalData.generalData,
+		(state: any) => state.generalData,
 	);
 	const [newArrivalBooks, setNewArrivalBooks] = useState<any[]>([]);
 	const [popularBooks, setPopularBooks] = useState<any[]>([]);
@@ -94,19 +90,6 @@ export default function Home() {
 		);
 	}, []);
 
-	useEffect(() => {
-		fetchBooks(
-			{
-				url_info: {
-					url: API_ENDPOINTS.GENERAL_DATA,
-				},
-			},
-			(res: any) => {
-				dispatch(setGeneralData(res))
-			},
-		);
-	}, []);
-
 	return (
 		<main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
 			<Header />
@@ -151,42 +134,41 @@ export default function Home() {
 
 			<section className="py-4 lg:py-6 bg-gray-50">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="grid gap-6 lg:gap-8 md:grid-cols-3">
+					<div className="w-full">
 						{/* Main Carousel Section */}
-						<div className="md:col-span-2">
-							
-								<Suspense
-									fallback={
-										<div className="animate-pulse h-full w-full bg-gray-200 rounded-2xl" />
-									}>
-									<MainCarousel
-										carouselItems={carouselItems}
-										isLoading={isCarouselLoading}
-									/>
-								</Suspense>
+						<div className="w-full">
+							<Suspense
+								fallback={
+									<div className="animate-pulse h-full w-full bg-gray-200 rounded-2xl" />
+								}>
+								<MainCarousel
+									carouselItems={carouselItems}
+									isLoading={isCarouselLoading}
+								/>
+							</Suspense>
 						</div>
 
 						{/* Advertisement Sidebar */}
-						<div className="space-y-4 xs:space-y-5 sm:space-y-6 h-[250px] xs:h-[300px] sm:h-[400px] md:h-[450px] lg:h-[400px] xl:h-[400px] overflow-hidden">
-							{advertisementItems.map(
+						{/* <div className="space-y-4 xs:space-y-5 sm:space-y-6 h-[250px] xs:h-[300px] sm:h-[400px] md:h-[450px] lg:h-[400px] xl:h-[400px] overflow-hidden">
+							{advertisementItems.slice(0, 2).map(
 								(item: any, index: number) => (
 									<div
-										key={item.id || index} // Prefer unique id over index
-										className="group relative rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg overflow-hidden h-[115px] xs:h-[140px] sm:h-[180px] md:h-[210px] lg:h-[230px] xl:h-[260px]"
+										key={item.id || index}
+										className="group relative rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg overflow-hidden h-full"
 										role="region"
 										aria-label={`Advertisement ${index + 1}`}>
 										<Image
 											src={item.image_url}
-											alt={item.alt_text || `Advertisement ${index + 1}`} // Provide fallback alt text
-											fill // Use fill for responsive images
+											alt={item.alt_text || `Advertisement ${index + 1}`}
+											fill
 											sizes="(max-width: 480px) 100vw, 
 												(max-width: 640px) 90vw,
 												(max-width: 768px) 50vw,
 												(max-width: 1024px) 40vw,
-												33vw" // Optimized responsive sizes
+												33vw"
 											className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-2xl"
-											loading={index > 2 ? "lazy" : "eager"} // Eager load first few images
-											priority={index <= 2} // Prioritize initial images
+											loading={index > 2 ? "lazy" : "eager"}
+											priority={index <= 2}
 										/>
 										<div 
 											className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -194,7 +176,7 @@ export default function Home() {
 									</div>
 								),
 							)}
-						</div>
+						</div> */}
 					</div>
 				</div>
 			</section>

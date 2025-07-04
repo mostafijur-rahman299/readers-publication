@@ -23,5 +23,12 @@ export const API_ENDPOINTS = {
   BOOK_REVIEWS: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/${book_id}/`,
   BOOK_REVIEW_DISTRIBUTION: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/distribution/${book_id}/`,
   BOOK_RELATED: `${BACKEND_URL}/book/api/v1/related-books/`,
-  CART_LIST: `${BACKEND_URL}/cart/api/v1/list/`,
+
+  // Cart
+  CART_LIST: `${BACKEND_URL}/cart/api/v1/`,
+  ADD_TO_CART: `${BACKEND_URL}/cart/api/v1/`,
+  DELETE_CART_ITEM: (cartItemId) => `${BACKEND_URL}/cart/api/v1/${cartItemId}/`,
+  REMOVE_FROM_CART: (cartItemId) => `${BACKEND_URL}/cart/api/v1/remove/${cartItemId}/`,
+  UPDATE_CART_QUANTITY: (cartItemId) => `${BACKEND_URL}/cart/api/v1/update-quantity/${cartItemId}/`,
+  CLEAR_CART: `${BACKEND_URL}/cart/api/v1/clear/`,
 }
