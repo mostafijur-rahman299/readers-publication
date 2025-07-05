@@ -213,7 +213,6 @@ export default function BookDetailPage() {
         cover_image: bookData.cover_image,
         price: bookData.price,
         discounted_price: bookData.discounted_price,
-        is_active: bookData.is_active,
         is_available: bookData.is_available,
       },
       author_details: {
@@ -823,25 +822,32 @@ export default function BookDetailPage() {
                               width: "200px",
                             }}
                           >
-                            <Link href={`/${locale}/books/${book.slug}`} className="block h-full">
+                            
+                            <div className="block h-full">
                               <div className="aspect-[3/4] w-full bg-gray-100 rounded-t-xl flex items-center justify-center overflow-hidden cursor-pointer relative" style={{height: "200px", minHeight: "200px", maxHeight: "200px"}}>
-                                <img
-                                  src={book.cover_image || "/images/book-skeleton.jpg"}
-                                  alt={locale === "bn" ? book.title_bn : book.title}
-                                  className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
-                                />
-                                {hasDiscount && (
-                                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-                                    -{discountPercent}%
-                                  </span>
-                                )}
+                                <Link href={`/${locale}/books/${book.slug}`}>
+                                  <img
+                                    src={book.cover_image || "/images/book-skeleton.jpg"}
+                                    alt={locale === "bn" ? book.title_bn : book.title}
+                                    className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                                  />
+                                  {hasDiscount && (
+                                    <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                                      -{discountPercent}%
+                                    </span>
+                                  )}
+                                </Link>
                               </div>
                               <div className="p-3">
                                 <div className="font-semibold text-base truncate mb-1">
+                                <Link href={`/${locale}/books/${book.slug}`}>
                                   {locale === "bn" ? book.title_bn?.length > 20 ? book.title_bn.slice(0, 20) + "..." : book.title_bn : book.title?.length > 20 ? book.title.slice(0, 20) + "..." : book.title}
+                                </Link>
                                 </div>
                                 <div className="text-xs text-gray-500 truncate mb-1">
-                                  {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+                                  <Link href={`/${locale}/authors/${book.author_slug}`}>
+                                    {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+                                  </Link>
                                 </div>
                                 <div className="flex items-center gap-1 mt-1">
                                   <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
@@ -869,7 +875,7 @@ export default function BookDetailPage() {
                                   )}
                                 </div>
                               </div>
-                            </Link>
+                              </div>
                           </div>
                         )
                       })}

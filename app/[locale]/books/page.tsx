@@ -20,12 +20,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Grid3X3,
-  List,
   SlidersHorizontal,
   ShoppingCart,
   Plus,
 } from "lucide-react"
+import useCart from "@/hooks/useCart"
 
 // Loading skeleton component
 const BookCardSkeleton = () => (
@@ -54,6 +53,18 @@ const FilterSection = ({
   isLoadingAuthors,
   locale,
   t,
+}: {
+  categories: any[]
+  authors: any[]
+  filterParams: any
+  onCategoryChange: (categoryId: string, checked: boolean) => void
+  onAuthorChange: (authorId: string, checked: boolean) => void
+  onPriceChange: (type: "min" | "max", value: string) => void
+  onClearFilters: () => void
+  isLoadingCategories: boolean
+  isLoadingAuthors: boolean
+  locale: string
+  t: (key: string) => string
 }) => {
   const activeFiltersCount =
     filterParams.category.length +
@@ -156,78 +167,102 @@ const FilterSection = ({
 }
 
 // Book card component
-const BookCard = ({ book, locale, onAddToCart }) => {
+const BookCard = ({ book, locale }: { book: any, locale: string }) => {
+  const { addToCart } = useCart()
+  
   const discountPercentage =
     book.discounted_price && book.discounted_price < book.price
       ? Math.round(((book.price - book.discounted_price) / book.price) * 100)
       : 0
 
-  const handleAddToCart = (e) => {
-    e.preventDefault() // Prevent navigation when clicking cart button
-    e.stopPropagation()
-    onAddToCart(book)
+
+  const handleAddToCart = (book: any) => {
+    let bookData = {
+      quantity: 1,
+      book_details: {
+        id: book.id,
+        slug: book.slug,
+        title: book.title,
+        title_bn: book.title_bn,
+        cover_image: book.cover_image,
+        price: book.price,
+        discounted_price: book.discounted_price,
+        is_available: book.is_available,
+      },
+      author_details: {
+        id: book.author_id,
+        slug: book.author_slug,
+        name: book.author_full_name,
+        name_bn: book.author_full_name_bn,
+      }
+    }
+    addToCart(bookData, 1)
   }
 
   return (
-    <Link href={`/books/${book.slug}`} className="group">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group-hover:border-teal-200 relative">
-        <div className="relative aspect-[3/4] bg-gray-50">
-          {discountPercentage > 0 && (
-            <Badge className="absolute top-2 left-2 z-10 bg-red-500 hover:bg-red-500 text-white text-xs font-bold">
-              {discountPercentage}% OFF
-            </Badge>
-          )}
+    
+    <div className="group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group-hover:border-teal-200 relative">
+      <div className="relative aspect-[3/4] bg-gray-50">
+        {discountPercentage > 0 && (
+          <Badge className="absolute top-2 left-2 z-10 bg-red-500 hover:bg-red-500 text-white text-xs font-bold">
+            {discountPercentage}% OFF
+          </Badge>
+        )}
 
-          {/* Cart Button */}
+        {/* Cart Button */}
+        <Button
+          size="sm"
+          onClick={() => handleAddToCart(book)}
+          className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-white/90 hover:bg-white text-teal-600 hover:text-teal-700 shadow-sm border border-gray-200 hover:border-teal-300 opacity-0 group-hover:opacity-100 transition-all duration-200"
+          title="Add to cart"
+        >
+          <ShoppingCart className="h-4 w-4" />
+        </Button>
+        <Link href={`/${locale}/books/${book.slug}`}>
+        <Image
+          src={book.cover_image || "/images/book-skeleton.jpg"}
+          alt={book.title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+        />
+        </Link>
+      </div>
+      <div className="p-4 space-y-2">
+        <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors text-sm leading-tight">
+          <Link href={`/${locale}/books/${book.slug}`}>
+            {locale === "bn" ? book.title_bn : book.title}
+          </Link>
+        </h3>
+        <p className="text-xs text-gray-600 line-clamp-1">
+          <Link href={`/${locale}/authors/${book.author_slug}`}>
+            {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+          </Link>
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {book.discounted_price && book.discounted_price < book.price ? (
+              <>
+                <span className="font-semibold text-teal-600 text-sm">৳{book.discounted_price}</span>
+                <span className="text-xs text-gray-500 line-through">৳{book.price}</span>
+              </>
+            ) : (
+              <span className="font-semibold text-teal-600 text-sm">৳{book.price}</span>
+            )}
+          </div>
+
+          {/* Mobile Cart Button */}
           <Button
             size="sm"
             onClick={handleAddToCart}
-            className="absolute top-2 right-2 z-10 h-8 w-8 p-0 bg-white/90 hover:bg-white text-teal-600 hover:text-teal-700 shadow-sm border border-gray-200 hover:border-teal-300 opacity-0 group-hover:opacity-100 transition-all duration-200"
+            className="h-7 w-7 p-0 bg-teal-600 hover:bg-teal-700 text-white sm:hidden"
             title="Add to cart"
           >
-            <ShoppingCart className="h-4 w-4" />
+            <Plus className="h-3 w-3" />
           </Button>
-
-          <Image
-            src={book.cover_image || "/images/book-skeleton.jpg"}
-            alt={book.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-          />
-        </div>
-        <div className="p-4 space-y-2">
-          <h3 className="font-medium text-gray-900 line-clamp-2 group-hover:text-teal-600 transition-colors text-sm leading-tight">
-            {locale === "bn" ? book.title_bn : book.title}
-          </h3>
-          <p className="text-xs text-gray-600 line-clamp-1">
-            {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
-          </p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {book.discounted_price && book.discounted_price < book.price ? (
-                <>
-                  <span className="font-semibold text-teal-600 text-sm">৳{book.discounted_price}</span>
-                  <span className="text-xs text-gray-500 line-through">৳{book.price}</span>
-                </>
-              ) : (
-                <span className="font-semibold text-teal-600 text-sm">৳{book.price}</span>
-              )}
-            </div>
-
-            {/* Mobile Cart Button */}
-            <Button
-              size="sm"
-              onClick={handleAddToCart}
-              className="h-7 w-7 p-0 bg-teal-600 hover:bg-teal-700 text-white sm:hidden"
-              title="Add to cart"
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -243,7 +278,6 @@ export default function BooksPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [authors, setAuthors] = useState<any[]>([])
   const [books, setBooks] = useState<any[]>([])
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -385,22 +419,6 @@ export default function BooksPage() {
     return rangeWithDots
   }
 
-  // Cart handler
-  const handleAddToCart = (book) => {
-    // You can implement your cart logic here
-    // For now, we'll just show a simple alert
-    console.log("Adding to cart:", book)
-
-    // Example implementation - you might want to:
-    // - Call an API to add to cart
-    // - Update local storage
-    // - Show a toast notification
-    // - Update cart state
-
-    // Temporary feedback
-    alert(`Added "${locale === "bn" ? book.title_bn : book.title}" to cart!`)
-  }
-
   const activeFiltersCount =
     filterParams.category.length +
     filterParams.author.length +
@@ -477,26 +495,6 @@ export default function BooksPage() {
                     </div>
                   </SheetContent>
                 </Sheet>
-
-                {/* View Mode Toggle */}
-                <div className="hidden sm:flex items-center border rounded-lg p-1">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="h-8 w-8 p-0"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
 
               {/* Sort Dropdown */}
@@ -580,7 +578,7 @@ export default function BooksPage() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
                   {books.map((book) => (
-                    <BookCard key={book.slug} book={book} locale={locale} onAddToCart={handleAddToCart} />
+                    <BookCard key={book.slug} book={book} locale={locale} />
                   ))}
                 </div>
               )}

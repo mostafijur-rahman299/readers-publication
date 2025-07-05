@@ -24,7 +24,7 @@ export function Header() {
     const newPath = `/${lang}/${restOfPath}`;
     router.push(newPath);
   };
-  const cartCount = useSelector((state: any) => state.cart.cart_count);
+  const cartItems = useSelector((state: any) => state.cart.cart_items);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -104,9 +104,9 @@ export function Header() {
             >
               <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 p-1.5 text-brand-600 transition-colors group-hover:bg-brand-100">
                 <FaShoppingCart />
-                {cartCount > 0 && (
+                {cartItems && cartItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold leading-none shadow">
-                    {cartCount}
+                    {cartItems.length > 9 ? "9+" : cartItems.length}
                   </span>
                 )}
               </div>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import useHttp from './useHttp'
 import { API_ENDPOINTS } from '@/constants/apiEnds'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { addCartItem, removeCartItem } from '@/store/cart'
+import { randomIdGenerator } from '@/utils/generalFunc'
 
 
 const useCart = () => {
@@ -11,6 +13,7 @@ const useCart = () => {
   const { sendRequests } = useHttp()
   const isAuthUser = useSelector((state: any) => state.user.isAuthenticated)
   const user = useSelector((state: any) => state.user.userInfo)
+  const dispatch = useDispatch()
 
   // Fetch cart items
   const fetchCartItemsAuthUser = async () => {
@@ -39,6 +42,14 @@ const useCart = () => {
     }
   }
 
+  const fetchCartItems = async () => {
+    if (isAuthUser) {
+      fetchCartItemsAuthUser()
+    } else {
+      fetchCartItemsUnAuthUser()
+    }
+  }
+
   // Add item to cart
   const addToCartAuthUser = async (bookId: number | string, quantity = 1) => {
     setLoading(true)
@@ -56,7 +67,13 @@ const useCart = () => {
           user: user.id
         },
       }, (response: any) => {
-        console.log(response)
+        let cart = {
+          book_id: bookId,
+          quantity: quantity,
+          uuid: response.uuid,
+        }
+        dispatch(addCartItem(cart))
+        setLoading(false)
       })
     } catch (err: any) {
       setError(err.message)
@@ -65,14 +82,31 @@ const useCart = () => {
   }
 
   const addToCartUnAuthUser = async (book: any, quantity = 1) => {
-    const cartItems = localStorage.getItem('cartItems')
+    let cartItems: any = localStorage.getItem('cartItems')
     if (cartItems) {
-      const cartItemsArray = JSON.parse(cartItems)
-      cartItemsArray.push({ ...book, quantity })
-      localStorage.setItem('cartItems', JSON.stringify(cartItemsArray))
+      cartItems = JSON.parse(cartItems)
     } else {
-      localStorage.setItem('cartItems', JSON.stringify([{ ...book, quantity }]))
+      cartItems = []
     }
+
+    // already exists
+    if (cartItems.find((item: any) => item.book_details.id === book.book_details.id)) {
+      cartItems.find((item: any) => item.book_details.id === book.book_details.id).quantity += quantity
+    } else {
+      cartItems.push({ 
+        ...book,
+        quantity: quantity,
+        uuid: "new-book-" + randomIdGenerator(),
+      })
+    }
+
+    localStorage.setItem('cartItems', JSON.stringify(cartItems))
+
+    dispatch(addCartItem({ 
+      book_id: book.book_details.id,
+      quantity: quantity,
+      uuid: "new-book-" + randomIdGenerator(),
+    }))
   }
 
   const addToCart = async (book: any, quantity = 1) => {
@@ -96,6 +130,7 @@ const useCart = () => {
         method: 'DELETE',
       }, (response: any) => {
         setCartItems(prev => prev.filter((item: any) => item.uuid !== cartItemId))
+        dispatch(removeCartItem(cartItemId))
         setLoading(false)
       })
     } catch (err: any) {
@@ -109,6 +144,16 @@ const useCart = () => {
     if (cartItems) {
       const cartItemsArray = JSON.parse(cartItems)
       localStorage.setItem('cartItems', JSON.stringify(cartItemsArray.filter((item: any) => item.uuid !== cartItemId)))
+      setCartItems(prev => prev.filter((item: any) => item.uuid !== cartItemId))
+      dispatch(removeCartItem(cartItemId))
+    }
+  }
+
+  const removeFromCart = async (cartItemId: number | string) => {
+    if (isAuthUser) {
+      removeFromCartAuthUser(cartItemId)
+    } else {
+      removeFromCartUnAuthUser(cartItemId)
     }
   }
 
@@ -143,82 +188,29 @@ const useCart = () => {
     if (cartItems) {
       const cartItemsArray = JSON.parse(cartItems)
       localStorage.setItem('cartItems', JSON.stringify(cartItemsArray.map((item: any) => item.uuid === cartItemId ? { ...item, quantity: newQuantity } : item)))
+      setCartItems(prev => prev.map((item: any) => item.uuid === cartItemId ? { ...item, quantity: newQuantity } : item))
     }
   }
 
-  // Get cart total
-  const getCartTotalAuthUser = () => {
-    return cartItems.reduce((total, item) => {
-      return total + (item.book_details.discounted_price * item.quantity)
-    }, 0)
-  }
-
-  const getCartTotalUnAuthUser = () => {
-    const cartItems = localStorage.getItem('cartItems')
-    if (cartItems) {
-      const cartItemsArray = JSON.parse(cartItems)
-      return cartItemsArray.reduce((total: number, item: any) => total + (item.book_details.discounted_price * item.quantity), 0)
+  const updateQuantity = async (cartItemId: number | string, newQuantity: number) => {
+    if (isAuthUser) {
+      updateQuantityAuthUser(cartItemId, newQuantity)
+    } else {
+      updateQuantityUnAuthUser(cartItemId, newQuantity)
     }
   }
 
-  // Get cart count
-  const getCartCountAuthUser = () => {
-    return cartItems.reduce((count, item) => count + item.quantity, 0)
-  }
-
-  const getCartCountUnAuthUser = () => {
-    const cartItems = localStorage.getItem('cartItems')
-    if (cartItems) {
-      const cartItemsArray = JSON.parse(cartItems)
-      return cartItemsArray.reduce((count: number, item: any) => count + item.quantity, 0)
-    }
-  }
-
-  // Check if item exists in cart
-  const isItemInCartAuthUser = (bookId: number | string) => {
-    return cartItems.some(item => item.book_details.id === bookId)
-  }
-
-  const isItemInCartUnAuthUser = (bookId: number | string) => {
-    const cartItems = localStorage.getItem('cartItems')
-    if (cartItems) {
-      const cartItemsArray = JSON.parse(cartItems)
-      return cartItemsArray.some((item: any) => item.book_details.id === bookId)
-    }
-  }
-
-  // Get item from cart
-  const getCartItemAuthUser = (bookId: number | string) => {
-    return cartItems.find(item => item.book_details.id === bookId)
-  }
-
-  const getCartItemUnAuthUser = (bookId: number | string) => {
-    const cartItems = localStorage.getItem('cartItems')
-    if (cartItems) {
-      const cartItemsArray = JSON.parse(cartItems)
-      return cartItemsArray.find((item: any) => item.book_details.id === bookId)
-    }
-  }
 
   return {
     cartItems,
     loading,
     error,
     addToCart,
-    removeFromCartAuthUser,
-    removeFromCartUnAuthUser,
-    updateQuantityAuthUser,
-    updateQuantityUnAuthUser,
+    removeFromCart,
+    updateQuantity,
     fetchCartItemsAuthUser,
     fetchCartItemsUnAuthUser,
-    getCartTotalAuthUser,
-    getCartTotalUnAuthUser,
-    getCartCountAuthUser,
-    getCartCountUnAuthUser,
-    isItemInCartAuthUser,
-    isItemInCartUnAuthUser,
-    getCartItemAuthUser,
-    getCartItemUnAuthUser,
+    fetchCartItems
   }
 }
 

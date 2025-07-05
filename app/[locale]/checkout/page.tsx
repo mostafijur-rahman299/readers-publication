@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations, useLocale } from "next-intl"
 import { Banknote, Smartphone, RotateCcw, Coins, Info, Edit, Trash2, Plus, X } from "lucide-react"
 import Image from "next/image"
+import AddressModal from "./components/AddressModal"
 
 type CartItem = {
   id: number
@@ -19,12 +20,14 @@ type CartItem = {
 }
 
 type Address = {
-  id: string
-  label: string
-  type: string
   name: string
   phone: string
-  address: string
+  email: string
+  state: string
+  city: string
+  thana: string
+  union: string
+  detail_address: string
 }
 
 export default function CheckoutPage() {
@@ -41,11 +44,14 @@ export default function CheckoutPage() {
 
   // Address form state
   const [newAddress, setNewAddress] = useState<Partial<Address>>({
-    label: "",
-    type: "",
     name: "",
     phone: "",
-    address: "",
+    email: "",
+    state: "",
+    city: "",
+    thana: "",
+    union: "",
+    detail_address: "",
   })
 
   // Addresses state (make it mutable)
@@ -100,11 +106,14 @@ export default function CheckoutPage() {
   const openAddressModal = () => {
     setShowAddressModal(true)
     setNewAddress({
-      label: "",
-      type: "",
       name: "",
       phone: "",
-      address: "",
+      email: "",
+      state: "",
+      city: "",
+      thana: "",
+      union: "",
+      detail_address: "",
     })
   }
   const closeAddressModal = () => {
@@ -118,124 +127,10 @@ export default function CheckoutPage() {
     })
   }
 
-  const handleNewAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setNewAddress((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleAddAddress = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Simple validation
-    if (
-      !newAddress.label ||
-      !newAddress.type ||
-      !newAddress.name ||
-      !newAddress.phone ||
-      !newAddress.address
-    ) {
-      alert("Please fill in all fields.")
-      return
-    }
-    const id = `${newAddress.label?.toLowerCase().replace(/\s+/g, "_")}_${Date.now()}`
-    const addressObj: Address = {
-      id,
-      label: newAddress.label!,
-      type: newAddress.type!,
-      name: newAddress.name!,
-      phone: newAddress.phone!,
-      address: newAddress.address!,
-    }
-    setAddresses((prev) => [...prev, addressObj])
-    setSelectedAddress(id)
-    closeAddressModal()
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <Navigation />
-
-      {/* Address Add Modal */}
-      {showAddressModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-2 p-6 relative">
-            <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-              onClick={closeAddressModal}
-              aria-label="Close"
-              type="button"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">{t("add_new_address")}</h3>
-            <form onSubmit={handleAddAddress} className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address_label") || "Label"}</label>
-                <Input
-                  name="label"
-                  value={newAddress.label || ""}
-                  onChange={handleNewAddressChange}
-                  placeholder="e.g. Home, Office"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address_type") || "Type"}</label>
-                <Input
-                  name="type"
-                  value={newAddress.type || ""}
-                  onChange={handleNewAddressChange}
-                  placeholder="e.g. HOME, OFFICE"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("name") || "Name"}</label>
-                <Input
-                  name="name"
-                  value={newAddress.name || ""}
-                  onChange={handleNewAddressChange}
-                  placeholder="Full Name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("phone") || "Phone"}</label>
-                <Input
-                  name="phone"
-                  value={newAddress.phone || ""}
-                  onChange={handleNewAddressChange}
-                  placeholder="Phone Number"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t("address") || "Address"}</label>
-                <textarea
-                  name="address"
-                  value={newAddress.address || ""}
-                  onChange={handleNewAddressChange}
-                  placeholder="Full Address"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  required
-                  rows={3}
-                />
-              </div>
-              <div className="pt-2 flex gap-2">
-                <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white flex-1">
-                  {t("add_address") || "Add Address"}
-                </Button>
-                <Button type="button" variant="outline" onClick={closeAddressModal} className="flex-1">
-                  {t("cancel") || "Cancel"}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto">
@@ -508,6 +403,12 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {/* Address Add Modal */}
+      {showAddressModal && (
+        <AddressModal newAddress={newAddress} setNewAddress={setNewAddress} closeAddressModal={closeAddressModal} />
+      )}
     </div>
   )
 }
+

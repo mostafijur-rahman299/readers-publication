@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useRef, useState, useEffect } from "react"
 import { useLocale } from "next-intl"
+import useCart from "@/hooks/useCart"
 
 export function NewsGrid({ book_type, books }: { book_type: string, books: any[] }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -14,6 +15,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [isScrollable, setIsScrollable] = useState(false)
   const locale = useLocale()
+  const { addToCart } = useCart()
 
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
@@ -62,6 +64,29 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
     }
   }, [])
 
+  const handleAddToCart = (book: any) => {
+    let bookData = {
+      quantity: 1,
+      book_details: {
+        id: book.id,
+        slug: book.slug,
+        title: book.title,
+        title_bn: book.title_bn,
+        cover_image: book.cover_image,
+        price: book.price,
+        discounted_price: book.discounted_price,
+        is_available: book.is_available,
+      },
+      author_details: {
+        id: book.author_id,
+        slug: book.author_slug,
+        name: book.author_full_name,
+        name_bn: book.author_full_name_bn,
+      }
+    }
+    addToCart(bookData, 1)
+  }
+
   return (
     <div className="relative w-full">
       {/* Navigation Buttons */}
@@ -106,7 +131,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
         )}
         
         {books.map((book) => (
-          <Link key={book.id} href={`/${locale}/books/${book.slug}`} className="group flex-none">
+          <div key={book.id} className="group flex-none">
             <div className="relative h-[360px] w-56 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-md hover:-translate-y-1">
               <div className="relative h-[220px] w-full bg-gray-50">
                 <Image
@@ -132,9 +157,9 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
                   size="icon"
                   className="absolute right-2 bottom-2 z-10 bg-white/80 hover:bg-white rounded-full shadow group-hover:scale-110 transition-transform"
                   aria-label="Add to cart"
-                  // onClick handler can be added here for cart functionality
                   tabIndex={-1}
                   type="button"
+                  onClick={() => handleAddToCart(book)}
                 >
                   <ShoppingCart className="h-5 w-5 text-blue-600" />
                 </Button>
@@ -155,12 +180,17 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-gray-900 leading-tight transition-colors group-hover:text-blue-600 line-clamp-2">
-                    {locale === "bn" ? book.title_bn?.length > 20 ? book.title_bn.slice(0, 20) + "..." : book.title_bn : book.title?.length > 20 ? book.title.slice(0, 20) + "..." : book.title}
-                  </h3>
-                  <p className="text-xs font-medium text-gray-600 line-clamp-1">
-                    {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
-                  </p>
+                  <Link href={`/${locale}/books/${book.slug}`} >
+                    <h3 className="text-sm font-semibold text-gray-900 leading-tight transition-colors group-hover:text-blue-600 line-clamp-2">
+                      {locale === "bn" ? book.title_bn?.length > 20 ? book.title_bn.slice(0, 20) + "..." : book.title_bn : book.title?.length > 20 ? book.title.slice(0, 20) + "..." : book.title}
+                    </h3>
+                  </Link>
+
+                  <Link href={`/${locale}/authors/${book.author_slug}`}>
+                    <p className="text-xs font-medium text-gray-600 line-clamp-1">
+                      {locale === "bn" ? book.author_full_name_bn : book.author_full_name}
+                    </p>
+                  </Link>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
@@ -181,7 +211,7 @@ export function NewsGrid({ book_type, books }: { book_type: string, books: any[]
                 </div>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

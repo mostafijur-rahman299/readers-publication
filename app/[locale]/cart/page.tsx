@@ -17,7 +17,7 @@ export default function CartPage() {
   const locale = useLocale()
   const generalData = useSelector((state: any) => state.generalData)
   const [selected, setSelected] = useState<number[]>([])
-  const { cartItems, updateQuantityAuthUser, removeFromCartAuthUser, updateQuantityUnAuthUser, removeFromCartUnAuthUser, fetchCartItemsAuthUser, fetchCartItemsUnAuthUser } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, fetchCartItems } = useCart()
   const allSelected = selected.length === cartItems.length && cartItems.length > 0
   const router = useRouter()
   const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated) 
@@ -44,29 +44,8 @@ export default function CartPage() {
   const totalSavings = originalSubtotal - subtotal
   const total = subtotal + (selected.length > 0 ? DELIVERY_CHARGE : 0)
 
-  const handleUpdateQuantity = async (cartItemId: number | string, newQuantity: number) => {
-    if (isAuthenticated) {
-      await updateQuantityAuthUser(cartItemId, newQuantity)
-    } else {
-      await updateQuantityUnAuthUser(cartItemId, newQuantity)
-    }
-  }
-
-  const handleRemoveFromCart = async (cartItemId: number | string) => {
-
-    if (isAuthenticated) {
-      await removeFromCartAuthUser(cartItemId)
-    } else {
-      await removeFromCartUnAuthUser(cartItemId)
-    }
-  }
-
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchCartItemsAuthUser()
-    } else {
-      fetchCartItemsUnAuthUser()
-    }
+    fetchCartItems()
   }, [isAuthenticated])
 
   return (
@@ -111,9 +90,9 @@ export default function CartPage() {
                   </div>
 
                   {/* Cart Items */}
-                  {cartItems.map((item) => (
+                  {cartItems.map((item, index) => (
                     <div
-                      key={item.uuid}
+                      key={index}
                       className={`bg-white rounded-lg border-2 transition-all duration-200 ${
                         selected.includes(item.uuid)
                           ? "border-orange-200 bg-orange-50/30"
@@ -131,21 +110,21 @@ export default function CartPage() {
                               className="h-5 w-5 rounded border-gray-300 text-orange-500 focus:ring-orange-400 focus:ring-offset-0 mt-1"
                             />
                             <div className="relative">
-                              <Link href={`/${locale}/books/${item.book_details.slug}`}>
+                              <Link href={`/${locale}/books/${item?.book_details?.slug}`}>
                                 <Image
                                   width={200}
                                   height={200}
-                                  src={item.cover_image || "/images/book-skeleton.jpg"}
-                                  alt={item.book_details.title}
+                                  src={item?.book_details?.cover_image || "/images/book-skeleton.jpg"}
+                                  alt={item?.book_details?.title || "Book Image"}
                                   className="h-28 w-20 object-cover rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                                   loading="lazy"
                                 />
                               </Link>
-                              {item.book_details.discounted_price < item.book_details.price && (
+                              {item?.book_details?.discounted_price < item?.book_details?.price && (
                                 <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
                                   {(
-                                    ((item.book_details.price - item.book_details.discounted_price) /
-                                      item.book_details.price) *
+                                    ((item?.book_details?.price - item?.book_details?.discounted_price) /
+                                      item?.book_details?.price) *
                                     100
                                   ).toFixed(0)}
                                   % OFF
@@ -158,32 +137,32 @@ export default function CartPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
                               <div className="flex-1 min-w-0">
-                                <Link href={`/${locale}/books/${item.book_details.slug}`}>
+                                <Link href={`/${locale}/books/${item?.book_details?.slug}`}>
                                   <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 hover:text-orange-600 transition-colors">
-                                    {locale === "en" ? item.book_details.title : item.book_details.title_bn}
+                                    {locale === "en" ? item?.book_details?.title : item?.book_details?.title_bn}
                                   </h3>
                                 </Link>
-                                <Link href={`/${locale}/authors/${item.author_details.slug}`}>
+                                <Link href={`/${locale}/authors/${item?.author_details?.slug}`}>
                                   <p className="text-sm text-gray-600 mb-3 hover:text-orange-600 transition-colors">
-                                    by {locale === "en" ? item.author_details.name : item.author_details.name_bn}
+                                    by {locale === "en" ? item?.author_details?.name : item?.author_details?.name_bn}
                                   </p>
                                 </Link>
 
                                 {/* Pricing */}
                                 <div className="flex items-center gap-3 mb-4">
                                   <span className="text-xl font-bold text-orange-600">
-                                    ৳{item.book_details.discounted_price.toFixed(2)}
+                                    ৳{item?.book_details?.discounted_price ? Number(item.book_details.discounted_price).toFixed(2) : '0.00'}
                                   </span>
-                                  {item.book_details.price > item.book_details.discounted_price && (
+                                  {item?.book_details?.price > item?.book_details?.discounted_price && (
                                     <>
                                       <span className="text-sm text-gray-500 line-through">
-                                        ৳{item.book_details.price.toFixed(2)}
+                                        ৳{item?.book_details?.price ? Number(item.book_details.price).toFixed(2) : '0.00'}
                                       </span>
                                       <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">
                                         Save{" "}
                                         {(
-                                          ((item.book_details.price - item.book_details.discounted_price) /
-                                            item.book_details.price) *
+                                          ((item?.book_details?.price - item?.book_details?.discounted_price) /
+                                            item?.book_details?.price) *
                                           100
                                         ).toFixed(0)}
                                         %
@@ -200,7 +179,7 @@ export default function CartPage() {
                                       size="sm"
                                       variant="ghost"
                                       className="h-8 w-8 rounded-lg hover:bg-orange-100 p-0 text-orange-600"
-                                      onClick={() => handleUpdateQuantity(item.uuid, item.quantity - 1)}
+                                      onClick={() => updateQuantity(item.uuid, item.quantity - 1)}
                                       disabled={item.quantity <= 1}
                                     >
                                       <Minus className="h-4 w-4" />
@@ -212,7 +191,7 @@ export default function CartPage() {
                                       size="sm"
                                       variant="ghost"
                                       className="h-8 w-8 rounded-lg hover:bg-orange-100 p-0 text-orange-600"
-                                      onClick={() => handleUpdateQuantity(item.uuid, item.quantity + 1)}
+                                      onClick={() => updateQuantity(item.uuid, item.quantity + 1)}
                                     >
                                       <Plus className="h-4 w-4" />
                                     </Button>
@@ -224,11 +203,11 @@ export default function CartPage() {
                               <div className="flex lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-3">
                                 <div className="text-right">
                                   <div className="text-lg font-bold text-gray-900">
-                                    ৳{(item.book_details.discounted_price * item.quantity).toFixed(2)}
+                                    ৳{(item?.book_details?.discounted_price ? Number(item.book_details.discounted_price) * item.quantity : 0).toFixed(2)}
                                   </div>
-                                  {item.book_details.price > item.book_details.discounted_price && (
+                                  {item?.book_details?.price > item?.book_details?.discounted_price && (
                                     <div className="text-sm text-gray-500 line-through">
-                                      ৳{(item.book_details.price * item.quantity).toFixed(2)}
+                                      ৳{(item?.book_details?.price ? Number(item.book_details.price) * item.quantity : 0).toFixed(2)}
                                     </div>
                                   )}
                                 </div>
@@ -236,7 +215,7 @@ export default function CartPage() {
                                   variant="ghost"
                                   size="sm"
                                   className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg"
-                                  onClick={() => handleRemoveFromCart(item.uuid)}
+                                  onClick={() => removeFromCart(item.uuid)}
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   <span className="text-sm">{t("remove") || "Remove"}</span>
@@ -258,34 +237,34 @@ export default function CartPage() {
                     <div className="space-y-4 mb-6">
                       <div className="flex justify-between text-gray-700">
                         <span>{t("subtotal") || "Subtotal"}</span>
-                        <span className="font-semibold">৳{subtotal.toFixed(2)}</span>
+                        <span className="font-semibold">৳{subtotal && Number(subtotal).toFixed(2)}</span>
                       </div>
 
                       {totalSavings > 0 && (
                         <div className="flex justify-between text-green-600">
                           <span>{t("total_savings") || "Total Savings"}</span>
-                          <span className="font-semibold">-৳{totalSavings.toFixed(2)}</span>
+                          <span className="font-semibold">-৳{totalSavings && Number(totalSavings).toFixed(2)}</span>
                         </div>
                       )}
 
                       {originalSubtotal > subtotal && (
                         <div className="flex justify-between text-sm text-gray-500">
                           <span>{t("original_price") || "Original Price"}</span>
-                          <span className="line-through text-red-500">৳{originalSubtotal.toFixed(2)}</span>
+                          <span className="line-through text-red-500">৳{originalSubtotal && Number(originalSubtotal).toFixed(2)}</span>
                         </div>
                       )}
 
                       <div className="flex justify-between text-gray-700">
                         <span>{t("delivery_charge") || "Delivery Charge"}</span>
                         <span className="font-semibold">
-                          ৳{selected.length > 0 ? DELIVERY_CHARGE.toFixed(2) : "0.00"}
+                          ৳{selected.length > 0 ? Number(DELIVERY_CHARGE).toFixed(2) : "0.00"}
                         </span>
                       </div>
 
                       <div className="border-t pt-4">
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-bold text-gray-900">{t("total") || "Total"}</span>
-                          <span className="text-2xl font-bold text-orange-600">৳{total.toFixed(2)}</span>
+                          <span className="text-2xl font-bold text-orange-600">৳{total && Number(total).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -335,7 +314,7 @@ export default function CartPage() {
                   asChild
                   className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md"
                 >
-                  <Link href="/shop">{t("go_shopping") || "Start Shopping"}</Link>
+                  <Link href={`/${locale}/books`}>{t("go_shopping") || "Start Shopping"}</Link>
                 </Button>
               </div>
             </div>
