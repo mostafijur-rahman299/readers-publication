@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import useHttp from './useHttp'
 import { API_ENDPOINTS } from '@/constants/apiEnds'
+import { useSelector } from 'react-redux'
 
 
 const useCart = () => {
@@ -8,6 +9,8 @@ const useCart = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const { sendRequests } = useHttp()
+  const isAuthUser = useSelector((state: any) => state.user.isAuthenticated)
+  const user = useSelector((state: any) => state.user.userInfo)
 
   // Fetch cart items
   const fetchCartItemsAuthUser = async () => {
@@ -45,14 +48,15 @@ const useCart = () => {
       sendRequests({
         url_info: {
           url: API_ENDPOINTS.ADD_TO_CART,
-          method: 'POST',
         },
+        method: 'POST',
         data: {
           book: bookId,
           quantity: quantity,
+          user: user.id
         },
       }, (response: any) => {
-        
+        console.log(response)
       })
     } catch (err: any) {
       setError(err.message)
@@ -68,6 +72,14 @@ const useCart = () => {
       localStorage.setItem('cartItems', JSON.stringify(cartItemsArray))
     } else {
       localStorage.setItem('cartItems', JSON.stringify([{ ...book, quantity }]))
+    }
+  }
+
+  const addToCart = async (book: any, quantity = 1) => {
+    if (isAuthUser) {
+      addToCartAuthUser(book.book_details.id, quantity)
+    } else {
+      addToCartUnAuthUser(book, quantity)
     }
   }
 
@@ -192,8 +204,7 @@ const useCart = () => {
     cartItems,
     loading,
     error,
-    addToCartAuthUser,
-    addToCartUnAuthUser,
+    addToCart,
     removeFromCartAuthUser,
     removeFromCartUnAuthUser,
     updateQuantityAuthUser,

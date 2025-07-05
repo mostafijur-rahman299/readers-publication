@@ -21,18 +21,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import useHttp from "@/hooks/useHttp"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 import { useLocale, useTranslations } from "next-intl"
 import BookPreviewModal from "../components/BookPreview"
+import useCart from "@/hooks/useCart"
 
 export default function BookDetailPage() {
   const { id } = useParams()
   const bookId = id as string
-  const [quantity, setQuantity] = useState(1)
+  const [cartQuantity, setCartQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isReading, setIsReading] = useState(false)
   const [currentReviewPage, setCurrentReviewPage] = useState(1)
@@ -49,6 +50,8 @@ export default function BookDetailPage() {
   const [bookReviewsPagination, setBookReviewsPagination] = useState<any>(null)
   const [relatedBooks, setRelatedBooks] = useState<any[]>([])
   const { sendRequests: fetchRelatedBooks, isLoading: isRelatedBooksLoading } = useHttp()
+  const router = useRouter()
+  const { addToCart } = useCart()
 
   // Carousel state for related books
   const [relatedCarouselIndex, setRelatedCarouselIndex] = useState(0)
@@ -140,10 +143,10 @@ export default function BookDetailPage() {
   }, [bookData, currentReviewPage])
 
   // Quantity change handler
-  const handleQuantityChange = (increment: boolean) => {
+  const handleCartQuantityChange = (increment: boolean) => {
     if (!bookData) return
     const max = parseInt(bookData?.available_copies) || 1
-    setQuantity((prev) => {
+    setCartQuantity((prev) => {
       if (increment) return prev < max ? prev + 1 : prev
       return prev > 1 ? prev - 1 : prev
     })
@@ -194,31 +197,33 @@ export default function BookDetailPage() {
     }
   }
 
-  // Carousel navigation for related books
-  const handleRelatedPrev = () => {
-    setRelatedCarouselIndex((prev) => Math.max(0, prev - RELATED_CAROUSEL_VISIBLE))
-  }
-  const handleRelatedNext = () => {
-    setRelatedCarouselIndex((prev) =>
-      Math.min(
-        Math.max(0, relatedBooks.length - RELATED_CAROUSEL_VISIBLE),
-        prev + RELATED_CAROUSEL_VISIBLE
-      )
-    )
-  }
-
   // See all related books handler (navigate to all books page with filter, or just /books)
   const handleSeeAllRelated = () => {
-    window.location.href = `/${locale}/books`
+    router.push(`/${locale}/books`)
   }
 
-  // --- Related Books Carousel Animation ---
-  // We'll use a translateX for smooth sliding
-  const getCarouselTranslate = () => {
-    // Each card is 220px wide (200px + 20px gap)
-    // If you change card width/gap, update this value
-    const CARD_WIDTH = 220
-    return `translateX(-${relatedCarouselIndex * CARD_WIDTH}px)`
+  const handleAddToCart = () => {
+    let book = {
+      quantity: cartQuantity,
+      book_details: {
+        id: bookData.id,
+        slug: bookData.slug,
+        title: bookData.title,
+        title_bn: bookData.title_bn,
+        cover_image: bookData.cover_image,
+        price: bookData.price,
+        discounted_price: bookData.discounted_price,
+        is_active: bookData.is_active,
+        is_available: bookData.is_available,
+      },
+      author_details: {
+        id: bookData.author.id,
+        slug: bookData.author.slug,
+        name: bookData.author.name,
+        name_bn: bookData.author.name_bn,
+      }
+    }
+    addToCart(book, cartQuantity)
   }
 
   return (
@@ -439,24 +444,24 @@ export default function BookDetailPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleQuantityChange(false)}
-                    disabled={quantity <= 1}
+                    onClick={() => handleCartQuantityChange(false)}
+                    disabled={cartQuantity <= 1}
                     className="h-7 w-7"
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
-                  <span className="w-8 text-center text-sm font-medium">{quantity}</span>
+                  <span className="w-8 text-center text-sm font-medium">{cartQuantity}</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleQuantityChange(true)}
-                    disabled={quantity >= parseInt(bookData?.available_copies || "1")}
+                    onClick={() => handleCartQuantityChange(true)}
+                    disabled={cartQuantity >= parseInt(bookData?.available_copies || "1")}
                     className="h-7 w-7"
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
                 </div>
-                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleAddToCart}>
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                   কার্টে যোগ করুন
                 </Button>
