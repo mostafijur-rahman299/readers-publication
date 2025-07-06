@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useLocale, useTranslations } from 'next-intl';
 import useHttp from "@/hooks/useHttp"
 import { Alert } from "@/components/ui/alert"
@@ -44,6 +44,10 @@ export default function SignUpPage() {
   const router = useRouter()
   const currentLocale = useLocale()
   const dispatch = useDispatch()
+
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get("redirect_url")
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
@@ -106,7 +110,11 @@ export default function SignUpPage() {
         localStorage.setItem("refresh_token", data.refresh_token)
         dispatch(setIsAuthenticated(true))
         setTimeout(() => {
-          router.push("/")
+          if(redirectUrl) {
+            router.push(redirectUrl)
+          } else {
+            router.push("/")
+          }
         }, 1000)
       }, (err: any) => {
         setErrors(err)
@@ -126,7 +134,17 @@ export default function SignUpPage() {
           access_token: tokenResponse.access_token,
         }
       }, (data: any) => {
-        console.log("data=======", data)
+        setSuccessMessage(t('success_message'))
+        localStorage.setItem("access_token", data.access_token)
+        localStorage.setItem("refresh_token", data.refresh_token)
+        dispatch(setIsAuthenticated(true))
+        setTimeout(() => {
+          if(redirectUrl) {
+            router.push(redirectUrl)
+          } else {
+            router.push("/")
+          }
+        }, 1000)
       })
     },
     onError: () => {
@@ -363,7 +381,7 @@ export default function SignUpPage() {
 
                   <div className="mt-6 text-center text-sm">
                     <span className="text-gray-600">{t('already_have_account')}</span>{" "}
-                    <Link href={`/${currentLocale}/signin`} className="font-medium text-brand-600 hover:text-brand-500">
+                    <Link href={`/${currentLocale}/signin?redirect_url=${redirectUrl}`} className="font-medium text-brand-600 hover:text-brand-500">
                       {t('sign_in')}
                     </Link>
                   </div>

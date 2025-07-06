@@ -48,6 +48,14 @@ export default function CartPage() {
     fetchCartItems()
   }, [isAuthenticated])
 
+  const handleCheckout = () => {
+    if (isAuthenticated) {
+      router.push(`/${locale}/checkout`)
+    } else {
+      router.push(`/${locale}/signin?redirect_url=/${locale}/cart`)
+    }
+  }
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -272,11 +280,7 @@ export default function CartPage() {
                     <Button
                       className="w-full py-4 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all duration-200 disabled:bg-orange-200 disabled:cursor-not-allowed shadow-md"
                       disabled={selected.length === 0}
-                      onClick={() => {
-                        if (selected.length > 0) {
-                          router.push(`/${locale}/checkout`)
-                        }
-                      }}
+                      onClick={handleCheckout}
                     >
                       {t("order_now") || "Proceed to Checkout"}
                     </Button>

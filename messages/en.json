@@ -207,7 +207,15 @@
         "add_address": "Add Address",
         "cancel": "Cancel",
         "union": "Sector/Area/Zone/Union",
-        "select_union": "Select Sector/Area/Zone/Union"
+        "select_union": "Select Sector/Area/Zone/Union",
+        "note": "Note",
+        "note_placeholder": "Any special instructions or notes for the delivery",
+        "home": "Home",
+        "office": "Office",
+        "other": "Other",
+        "address_type": "Address Type",
+        "is_default": "This is my default address",
+        "processing": "Processing..."
     },
     "books": {
         "title": "All Books",

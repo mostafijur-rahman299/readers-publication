@@ -6,18 +6,19 @@ import useHttp from "@/hooks/useHttp"
 import { useState, useEffect } from "react"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 
-const AddressModal = ({ closeAddressModal, newAddress, setNewAddress }: { closeAddressModal: () => void, newAddress: any, setNewAddress: (newAddress: any) => void }) => {
+const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) => {
   const t = useTranslations("checkout")
   const locale = useLocale()
   const [stateList, setStateList] = useState<any[]>([])
   const [cityList, setCityList] = useState<any[]>([])
   const [thanaList, setThanaList] = useState<any[]>([])
   const [unionList, setUnionList] = useState<any[]>([])
-
+  const [newAddress, setNewAddress] = useState<any>({})
   const {sendRequests: fetchStateList} = useHttp()
   const {sendRequests: fetchCityList} = useHttp()
   const {sendRequests: fetchThanaList} = useHttp()
   const {sendRequests: fetchUnionList} = useHttp()
+  const {sendRequests: createUpdateShippingAddress, isLoading: isCreatingUpdatingShippingAddress, error: createUpdateShippingAddressError} = useHttp()
 
   const handleNewAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -38,45 +39,64 @@ const AddressModal = ({ closeAddressModal, newAddress, setNewAddress }: { closeA
   }, [])
 
   useEffect(() => {
-    fetchCityList({
-        url_info: {
-            url: API_ENDPOINTS.CITY_LIST,
-        },
-        params: {
-            state_id: newAddress?.state,
-        }
-    }, (data: any) => {
-        setCityList(data)
-    })
+    if(newAddress?.state) {
+        fetchCityList({
+            url_info: {
+                url: API_ENDPOINTS.CITY_LIST,
+            },
+            params: {
+                state_id: newAddress?.state,
+            }
+        }, (data: any) => {
+            setCityList(data)
+        })
+    }
   }, [newAddress?.state])
 
   useEffect(() => {
-    fetchThanaList({
-        url_info: {
-            url: API_ENDPOINTS.THANA_LIST,
-        },
-        params: {
-            city_id: newAddress?.city,
-        }
-    }, (data: any) => {
-        setThanaList(data)
-    })
+    if(newAddress?.city) {
+        fetchThanaList({
+            url_info: {
+                url: API_ENDPOINTS.THANA_LIST,
+            },
+            params: {
+                city_id: newAddress?.city,
+            }
+        }, (data: any) => {
+                setThanaList(data)
+            })
+    }
   }, [newAddress?.city])
 
   useEffect(() => {
-    fetchUnionList({
-        url_info: {
-            url: API_ENDPOINTS.UNION_LIST,
-        },
-        params: {
-            thana_id: newAddress?.thana,
-        }
-    }, (data: any) => {
-        setUnionList(data)
-    })
+    if(newAddress?.thana) {
+        fetchUnionList({
+            url_info: {
+                url: API_ENDPOINTS.UNION_LIST,
+            },
+            params: {
+                thana_id: newAddress?.thana,
+            }
+        }, (data: any) => {
+                setUnionList(data)
+            })
+    }
   }, [newAddress?.thana])
 
-  console.log(newAddress)
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    createUpdateShippingAddress({
+        url_info: {
+            url: API_ENDPOINTS.SHIPPING_ADDRESS,
+            isAuthRequired: true,
+        },
+        method: "POST",
+        data: newAddress,
+    }, (data: any) => {
+        console.log(data)
+        closeAddressModal()
+    })
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-y-auto p-4">
@@ -94,7 +114,35 @@ const AddressModal = ({ closeAddressModal, newAddress, setNewAddress }: { closeA
             </div>
 
             <div className="p-6">
-                <form onSubmit={() => {}} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {createUpdateShippingAddressError?.non_field_errors && (
+                        <div className="bg-red-500 text-white p-3 rounded-md">
+                            <p className="text-sm">{createUpdateShippingAddressError?.non_field_errors}</p>
+                        </div>
+                    )}
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t("address_type") || "Address Type"}</label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            {["HOME", "OFFICE", "OTHER"].map((type) => (
+                                <label key={type} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 flex-1 justify-center">
+                                    <input 
+                                        type="radio" 
+                                        name="address_type" 
+                                        value={type} 
+                                        checked={newAddress.address_type === type} 
+                                        onChange={handleNewAddressChange} 
+                                        className="sr-only peer" 
+                                        required={type === "HOME"}
+                                    />
+                                    <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 peer-checked:bg-blue-500">
+                                        <div className="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
+                                    </div>
+                                    <span className="text-sm">{t(type.toLowerCase()) || type}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("full_name") || "Full Name"}</label>
@@ -129,7 +177,6 @@ const AddressModal = ({ closeAddressModal, newAddress, setNewAddress }: { closeA
                             onChange={handleNewAddressChange}
                             placeholder={"e.g. john.doe@example.com"}
                             className="w-full"
-                            required
                         />
                     </div>
 
@@ -212,12 +259,37 @@ const AddressModal = ({ closeAddressModal, newAddress, setNewAddress }: { closeA
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{t("note") || "Note"}</label>
+                        <textarea
+                            name="note"
+                            value={newAddress.note || ""}
+                            onChange={handleNewAddressChange}
+                            placeholder={t("note_placeholder")}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                            rows={3}
+                        />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            name="is_default"
+                            checked={newAddress.is_default || false}
+                            onChange={handleNewAddressChange}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                        <label className="text-sm font-medium text-gray-700">{t("is_default") || "Is Default"}</label>
+                        
+                    </div>
+
                     <div className="pt-4 flex flex-col sm:flex-row gap-3">
                         <Button 
                             type="submit" 
                             className="bg-blue-500 hover:bg-blue-600 text-white flex-1 transition-colors"
+                            disabled={isCreatingUpdatingShippingAddress}
                         >
-                            {t("add_address")}
+                            {isCreatingUpdatingShippingAddress ? t("processing") : t("add_address")}
                         </Button>
                         <Button 
                             type="button" 

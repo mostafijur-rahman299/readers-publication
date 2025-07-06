@@ -37,4 +37,5 @@ export const API_ENDPOINTS = {
   CITY_LIST: `${BACKEND_URL}/core/api/v1/city-list/`,
   THANA_LIST: `${BACKEND_URL}/core/api/v1/thana-list/`,
   UNION_LIST: `${BACKEND_URL}/core/api/v1/union-list/`,
+  SHIPPING_ADDRESS: `${BACKEND_URL}/shipping-address/api/v1/`,
 }
