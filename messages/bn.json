@@ -215,7 +215,8 @@
         "other": "অন্যান্য",
         "address_type": "অ্যাড্রেস প্রকার",
         "is_default": "এটি আমার ডিফল্ট অ্যাড্রেস",
-        "processing": "প্রসেসিং..."
+        "processing": "প্রসেসিং...",
+        "delivery_charge": "ডেলিভারি খরচ"
     },
     "books": {
         "title": "সকল বই",

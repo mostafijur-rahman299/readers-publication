@@ -31,7 +31,7 @@ export const API_ENDPOINTS = {
   REMOVE_FROM_CART: (cartItemId) => `${BACKEND_URL}/cart/api/v1/remove/${cartItemId}/`,
   UPDATE_CART_QUANTITY: (cartItemId) => `${BACKEND_URL}/cart/api/v1/update-quantity/${cartItemId}/`,
   CLEAR_CART: `${BACKEND_URL}/cart/api/v1/clear/`,
-
+  UPDATE_CHECKOUT_SELECTION_STATUS: `${BACKEND_URL}/cart/api/v1/update_checkout_selection_status/`,
   // Address
   STATE_LIST: `${BACKEND_URL}/core/api/v1/state-list/`,
   CITY_LIST: `${BACKEND_URL}/core/api/v1/city-list/`,

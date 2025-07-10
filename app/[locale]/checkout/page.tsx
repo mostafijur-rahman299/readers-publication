@@ -4,19 +4,22 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
-import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useTranslations, useLocale } from "next-intl"
 import { Banknote, Smartphone, RotateCcw, Coins, Info, Edit, Trash2, Plus, X } from "lucide-react"
 import Image from "next/image"
 import AddressModal from "./components/AddressModal"
 import useHttp from "@/hooks/useHttp"
-import { API_ENDPOINTS } from "@/constants/apiEnds" 
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import useCart from "@/hooks/useCart"
+import { useSelector } from "react-redux"
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout")
   const locale = useLocale()
-  const [cart, setCart] = useState<any[]>([])
+  const generalData = useSelector((state: any) => state.generalData)
+  const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated)
+  const { cartItems, fetchCartItems } = useCart()
   const [selectedPayment, setSelectedPayment] = useState<string>("")
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false)
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
@@ -43,18 +46,17 @@ export default function CheckoutPage() {
   }, [])
   
   useEffect(() => {
-    const mockCart: CartItem[] = [
-      { id: 1, title: "Wireless Mouse", price: 15.99, quantity: 2 },
-      { id: 2, title: "Bluetooth Headphones", price: 39.99, quantity: 1 },
-      { id: 3, title: "Laptop Stand", price: 24.49, quantity: 1 },
-    ]
-    setCart(mockCart)
-  }, [])
+    fetchCartItems()
+  }, [isAuthenticated])
 
-  const subtotal = 984
-  const onlineFee = 53
-  const totalAmount = 1037
-  const savings = 166
+  const DELIVERY_CHARGE = generalData?.delivery_charge || 0
+
+  const subtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.discounted_price * item.quantity, 0)
+  const originalSubtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.price * item.quantity, 0)
+  const totalSavings = originalSubtotal - subtotal
+  const total = subtotal + DELIVERY_CHARGE
+
+  console.log(cartItems)
 
   const handlePaymentSelection = (method: string) => {
     setSelectedPayment(method)
@@ -321,7 +323,7 @@ export default function CheckoutPage() {
                     onClick={handleSubmitOrder}
                     disabled={!selectedPayment || !termsAccepted}
                   >
-                    {t("confirm_order")} ৳{totalAmount.toLocaleString()}
+                    {t("confirm_order")} ৳{total.toLocaleString()}
                   </Button>
                 </div>
               </div>
@@ -335,26 +337,24 @@ export default function CheckoutPage() {
                 <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600 text-sm sm:text-base">{t("subtotal")}</span>
-                    <span className="font-medium text-sm sm:text-base">{subtotal} TK.</span>
+                    <span className="font-medium text-sm sm:text-base">৳{subtotal.toLocaleString()}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1">
-                          <span className="text-gray-600 text-sm sm:text-base">{t("online_fee")}</span>
-                      <span className="text-xs text-gray-500">({t("changeable")})</span>
-                      <Info className="h-3 w-3 text-gray-400" />
+                          <span className="text-gray-600 text-sm sm:text-base">{t("delivery_charge")}</span>
                     </div>
-                    <span className="font-medium text-sm sm:text-base">{onlineFee} TK.</span>
+                    <span className="font-medium text-sm sm:text-base">৳{DELIVERY_CHARGE.toLocaleString()}</span>
                   </div>
 
                   <div className="flex justify-between border-t pt-3 sm:pt-4">
                     <span className="text-gray-600 text-sm sm:text-base">{t("total")}</span>
-                    <span className="font-medium text-sm sm:text-base">{totalAmount} TK.</span>
+                    <span className="font-medium text-sm sm:text-base">৳{total.toLocaleString()}</span>
                   </div>
 
                   <div className="flex justify-between font-semibold text-base sm:text-lg">
                     <span>{t("payable_total")}</span>
-                    <span>{totalAmount} TK.</span>
+                    <span>৳{total.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -375,9 +375,6 @@ export default function CheckoutPage() {
                 </div> */}
 
                 {/* Savings */}
-                <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
-                  <span className="text-green-600 font-medium text-sm sm:text-base">{t("you_are_saving")} {savings} TK</span>
-                </div>
               </div>
             </div>
           </div>

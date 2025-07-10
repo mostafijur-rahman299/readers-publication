@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import useHttp from './useHttp'
 import { API_ENDPOINTS } from '@/constants/apiEnds'
 import { useDispatch, useSelector } from 'react-redux'
-import { addCartItem, removeCartItem } from '@/store/cart'
+import { addCartItem, removeCartItem, updateSelectionStatusChange } from '@/store/cart'
 import { randomIdGenerator } from '@/utils/generalFunc'
 
 
@@ -200,6 +200,38 @@ const useCart = () => {
     }
   }
 
+  const updateSelectionStatusChangeAuthUser = (ids: string[], is_selected: boolean) => {
+    sendRequests({
+      url_info: {
+        url: API_ENDPOINTS.UPDATE_CHECKOUT_SELECTION_STATUS,
+      },
+      method: "POST",
+      data: {
+        cart_ids: ids,
+        is_selected: is_selected
+      }
+    }, (response: any) => {
+      setCartItems(prev => prev.map((item: any) => ids.includes(item.uuid) ? { ...item, is_selected: is_selected } : item))
+     })
+  }
+
+  const updateSelectionStatusChangeUnAuthUser = (ids: string[], is_selected: boolean) => {
+    const cartItems = localStorage.getItem('cartItems')
+    if (cartItems) {
+      const cartItemsArray = JSON.parse(cartItems)
+      localStorage.setItem('cartItems', JSON.stringify(cartItemsArray.map((item: any) => ids.includes(item.uuid) ? { ...item, is_selected: is_selected } : item)))
+      setCartItems(prev => prev.map((item: any) => ids.includes(item.uuid) ? { ...item, is_selected: is_selected } : item))
+    }
+  }
+
+  const updateSelectionStatusChange = (ids: string[], is_selected: boolean) => {
+    if (isAuthUser) {
+      updateSelectionStatusChangeAuthUser(ids, is_selected)
+    } else {
+      updateSelectionStatusChangeUnAuthUser(ids, is_selected)
+    }
+  }
+
 
   return {
     cartItems,
@@ -208,6 +240,7 @@ const useCart = () => {
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateSelectionStatusChange,
     fetchCartItemsAuthUser,
     fetchCartItemsUnAuthUser,
     fetchCartItems

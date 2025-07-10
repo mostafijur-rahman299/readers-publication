@@ -21,8 +21,17 @@ const cartSlice = createSlice({
     removeCartItem: (state, action) => {
       state.cart_items = state.cart_items.filter((item) => item.uuid !== action.payload);
     },
+    updateSelectionStatusChange: (state, action) => {
+      console.log(action.payload.ids)
+      state.cart_items = state.cart_items.map((item) => {
+        if (action.payload.ids.includes(item.uuid)) {
+          return { ...item, is_selected: !item.is_selected }
+        }
+        return item
+      })
+    }
   },
 });
 
-export const { setCartItems, addCartItem, removeCartItem } = cartSlice.actions;
+export const { setCartItems, addCartItem, removeCartItem, updateSelectionStatusChange } = cartSlice.actions;
 export default cartSlice.reducer;

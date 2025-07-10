@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { ShoppingCart, Trash2, Plus, Minus, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,33 +16,25 @@ export default function CartPage() {
   const t = useTranslations("cart")
   const locale = useLocale()
   const generalData = useSelector((state: any) => state.generalData)
-  const [selected, setSelected] = useState<number[]>([])
-  const { cartItems, updateQuantity, removeFromCart, fetchCartItems } = useCart()
-  const allSelected = selected.length === cartItems.length && cartItems.length > 0
+  const { cartItems, updateQuantity, removeFromCart, fetchCartItems, updateSelectionStatusChange } = useCart()
+  const allSelected = cartItems.every((item) => item.is_selected)
+  const someSelected = cartItems.some((item) => item.is_selected)
   const router = useRouter()
   const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated) 
 
-
   const DELIVERY_CHARGE = generalData?.delivery_charge || 0
 
-  const handleSelect = (id: number) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((selId) => selId !== id) : [...prev, id]))
-  }
-
   const handleSelectAll = () => {
-    setSelected(allSelected ? [] : cartItems.map((item) => item.uuid))
+    const ids = cartItems.map((item) => item.uuid)
+    updateSelectionStatusChange(ids, !allSelected)
   }
 
-  const subtotal = cartItems
-    .filter((item) => selected.includes(item.uuid))
-    .reduce((sum, item) => sum + item.book_details.discounted_price * item.quantity, 0)
+  const subtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.discounted_price * item.quantity, 0)
 
-  const originalSubtotal = cartItems
-    .filter((item) => selected.includes(item.uuid))
-    .reduce((sum, item) => sum + item.book_details.price * item.quantity, 0)
+  const originalSubtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.price * item.quantity, 0)
 
   const totalSavings = originalSubtotal - subtotal
-  const total = subtotal + (selected.length > 0 ? DELIVERY_CHARGE : 0)
+  const total = subtotal + DELIVERY_CHARGE
 
   useEffect(() => {
     fetchCartItems()
@@ -92,7 +84,7 @@ export default function CartPage() {
                       />
                       <span className="text-base font-semibold text-gray-900">{t("select_all") || "Select All"}</span>
                       <span className="ml-auto text-sm text-gray-500 bg-orange-50 px-3 py-1 rounded-full">
-                        {selected.length} / {cartItems.length}
+                        {cartItems.filter((item) => item.is_selected).length} / {cartItems.length}
                       </span>
                     </label>
                   </div>
@@ -102,7 +94,7 @@ export default function CartPage() {
                     <div
                       key={index}
                       className={`bg-white rounded-lg border-2 transition-all duration-200 ${
-                        selected.includes(item.uuid)
+                        item.is_selected
                           ? "border-orange-200 bg-orange-50/30"
                           : "border-gray-200 hover:border-yellow-200"
                       }`}
@@ -113,8 +105,8 @@ export default function CartPage() {
                           <div className="flex items-start gap-3 flex-shrink-0">
                             <input
                               type="checkbox"
-                              checked={selected.includes(item.uuid)}
-                              onChange={() => handleSelect(item.uuid)}
+                              checked={item.is_selected}
+                              onChange={() => updateSelectionStatusChange([item.uuid], !item.is_selected)}
                               className="h-5 w-5 rounded border-gray-300 text-orange-500 focus:ring-orange-400 focus:ring-offset-0 mt-1"
                             />
                             <div className="relative">
@@ -265,7 +257,7 @@ export default function CartPage() {
                       <div className="flex justify-between text-gray-700">
                         <span>{t("delivery_charge") || "Delivery Charge"}</span>
                         <span className="font-semibold">
-                          ৳{selected.length > 0 ? Number(DELIVERY_CHARGE).toFixed(2) : "0.00"}
+                          ৳{Number(DELIVERY_CHARGE).toFixed(2)}
                         </span>
                       </div>
 
@@ -279,23 +271,23 @@ export default function CartPage() {
 
                     <Button
                       className="w-full py-4 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all duration-200 disabled:bg-orange-200 disabled:cursor-not-allowed shadow-md"
-                      disabled={selected.length === 0}
+                      disabled={!someSelected}
                       onClick={handleCheckout}
                     >
                       {t("order_now") || "Proceed to Checkout"}
                     </Button>
 
-                    {selected.length === 0 && (
+                    {!someSelected && (
                       <p className="text-sm text-gray-500 text-center mt-3">
                         {t("please_select_items_to_proceed") || "Please select items to proceed"}
                       </p>
                     )}
 
                     {/* Selected Items Count */}
-                    {selected.length > 0 && (
+                      {someSelected && (
                       <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
                         <p className="text-sm text-orange-700 text-center">
-                          {selected.length} item{selected.length > 1 ? "s" : ""} selected for checkout
+                          {cartItems.filter((item) => item.is_selected).length} item{cartItems.filter((item) => item.is_selected).length > 1 ? "s" : ""} selected for checkout
                         </p>
                       </div>
                     )}

@@ -215,7 +215,8 @@
         "other": "Other",
         "address_type": "Address Type",
         "is_default": "This is my default address",
-        "processing": "Processing..."
+        "processing": "Processing...",
+        "delivery_charge": "Delivery Charge"
     },
     "books": {
         "title": "All Books",
