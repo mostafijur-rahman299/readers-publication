@@ -10,62 +10,38 @@ import { useTranslations, useLocale } from "next-intl"
 import { Banknote, Smartphone, RotateCcw, Coins, Info, Edit, Trash2, Plus, X } from "lucide-react"
 import Image from "next/image"
 import AddressModal from "./components/AddressModal"
-
-type CartItem = {
-  id: number
-  title: string
-  price: number
-  quantity: number
-  image?: string
-}
-
-type Address = {
-  name: string
-  phone: string
-  email: string
-  state: string
-  city: string
-  thana: string
-  union: string
-  detail_address: string
-}
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds" 
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout")
   const locale = useLocale()
-  const [cart, setCart] = useState<CartItem[]>([])
+  const [cart, setCart] = useState<any[]>([])
   const [selectedPayment, setSelectedPayment] = useState<string>("")
-  const [promoCode, setPromoCode] = useState<string>("")
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false)
-  const [selectedAddress, setSelectedAddress] = useState<string>("home")
-
+  const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
   // Modal state
   const [showAddressModal, setShowAddressModal] = useState(false)
-
+  const {sendRequests: fetchShippingAddress, isLoading: fetchingShippingAddress} = useHttp()
+  const {sendRequests: deleteShippingAddress, isLoading: deletingShippingAddress} = useHttp()
   // Address form state
-  const [newAddress, setNewAddress] = useState<Partial<Address>>({
-    name: "",
-    phone: "",
-    email: "",
-    state: "",
-    city: "",
-    thana: "",
-    union: "",
-    detail_address: "",
-  })
+  const [isEditAddress, setIsEditAddress] = useState<boolean>(false)
+  const [editAddress, setEditAddress] = useState<any>({})
 
   // Addresses state (make it mutable)
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: "home",
-      label: "পারিবারিক সদর",
-      type: "HOME",
-      name: "Md Mostafijur Rahman",
-      phone: "01404334031",
-      address: "Infront of SKS hospital, masterpara পারিবারিক পোস্ট অফিস, পারিবারিক সদর, পারিবারিক, বাংলাদেশ।",
-    },
-  ])
+  const [addresses, setAddresses] = useState<any[]>([])
 
+  useEffect(() => {
+    fetchShippingAddress({
+      url_info: {
+        url: API_ENDPOINTS.SHIPPING_ADDRESS,
+        isAuthRequired: true
+      }
+    }, (res: any) => {
+      setAddresses(res)
+    })
+  }, [])
+  
   useEffect(() => {
     const mockCart: CartItem[] = [
       { id: 1, title: "Wireless Mouse", price: 15.99, quantity: 2 },
@@ -96,34 +72,37 @@ export default function CheckoutPage() {
     alert(`Order placed successfully! Payment Method: ${selectedPayment}`)
   }
 
-  const applyPromoCode = () => {
-    if (promoCode.trim()) {
-      alert(`Promo code "${promoCode}" applied!`)
-    }
+  // Modal handlers
+  const openAddressAddModal = () => {
+    setShowAddressModal(true)
+    setIsEditAddress(false)
+    setEditAddress({})
   }
 
-  // Modal handlers
-  const openAddressModal = () => {
-    setShowAddressModal(true)
-    setNewAddress({
-      name: "",
-      phone: "",
-      email: "",
-      state: "",
-      city: "",
-      thana: "",
-      union: "",
-      detail_address: "",
-    })
-  }
   const closeAddressModal = () => {
     setShowAddressModal(false)
-    setNewAddress({
-      label: "",
-      type: "",
-      name: "",
-      phone: "",
-      address: "",
+  }
+
+  const openAddressEditModal = (address: any) => {
+    setShowAddressModal(true)
+    setIsEditAddress(true)
+    setEditAddress(address)
+  }
+
+  const handleSelectAddressDefaultAddress = (addressId: number) => {
+    setAddresses((prev: any[]) => prev.map((add: any) => add.id === addressId ? {...add, is_default: true} : {...add, is_default: false}))
+    setSelectedAddress(addressId)
+  }
+
+  const handleDeleteAddress = (addressId: number) => {
+    deleteShippingAddress({
+      url_info: {
+        url: API_ENDPOINTS.SHIPPING_ADDRESS + addressId + "/",
+        isAuthRequired: true
+      },
+      method: "DELETE"
+    }, (res: any) => {
+      setAddresses((prev: any[]) => prev.filter((add: any) => add.id !== addressId))
     })
   }
 
@@ -146,35 +125,34 @@ export default function CheckoutPage() {
                   {addresses.map((address) => (
                     <div
                       key={address.id}
-                      className={`border rounded-lg p-3 sm:p-4 cursor-pointer transition-colors ${
-                        selectedAddress === address.id ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                      className={`border rounded-lg p-3 sm:p-4 transition-colors ${
+                        address?.is_default ? "border-blue-500 bg-blue-50" : "border-gray-200"
                       }`}
-                      onClick={() => setSelectedAddress(address.id)}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                        <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="flex items-start gap-2 sm:gap-3 cursor-pointer" onClick={() => handleSelectAddressDefaultAddress(address.id)}>
                           <div
                             className={`w-5 h-5 rounded-full border-2 mt-1 flex-shrink-0 ${
-                              selectedAddress === address.id ? "border-blue-500 bg-blue-500" : "border-gray-300"
+                              address?.is_default ? "border-blue-500 bg-blue-500" : "border-gray-300"
                             }`}
                           >
-                            {selectedAddress === address.id && (
+                            {address?.is_default && (
                               <div className="w-full h-full rounded-full bg-white scale-50"></div>
                             )}
                           </div>
                           <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                              <span className="font-medium text-gray-800">{address.label}</span>
-                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">({address.type})</span>
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{address?.address_type?.toUpperCase()}</span>
                             </div>
                             <div className="text-xs sm:text-sm text-gray-700 space-y-0.5 sm:space-y-1">
                               <p>
-                                <strong>Name:</strong> {address.name}
+                                <strong>Name:</strong> {address?.name}
                               </p>
                               <p>
-                                <strong>Phone:</strong> {address.phone}
+                                <strong>Phone:</strong> {address?.phone}
                               </p>
-                              <p>{address.address}</p>
+                              <p>{locale === "bn" ? address.union?.name_bn : address.union?.name}, {locale === "bn" ? address.thana?.name_bn : address.thana?.name}, {locale === "bn" ? address.city?.name_bn : address.city?.name}, {locale === "bn" ? address.state?.name_bn : address.state?.name}</p>
+                              <p>{address.detail_address}</p>
                             </div>
                           </div>
                         </div>
@@ -183,6 +161,7 @@ export default function CheckoutPage() {
                             variant="ghost"
                             size="sm"
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2"
+                            onClick={() => openAddressEditModal(address)}
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             <span className="hidden xs:inline">Edit</span>
@@ -191,6 +170,7 @@ export default function CheckoutPage() {
                             variant="ghost"
                             size="sm"
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                            onClick={() => handleDeleteAddress(address.id)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             <span className="hidden xs:inline">Delete</span>
@@ -203,7 +183,7 @@ export default function CheckoutPage() {
                   <Button
                     variant="outline"
                     className="w-full py-2 sm:py-3 text-blue-600 border-blue-200 hover:bg-blue-50 flex items-center justify-center gap-2 bg-transparent text-sm sm:text-base"
-                    onClick={openAddressModal}
+                    onClick={openAddressAddModal}
                   >
                     <Plus className="h-4 w-4" />
                     <span>{t("add_new_address")}</span>
@@ -406,7 +386,14 @@ export default function CheckoutPage() {
 
       {/* Address Add Modal */}
       {showAddressModal && (
-        <AddressModal newAddress={newAddress} setNewAddress={setNewAddress} closeAddressModal={closeAddressModal} />
+        <AddressModal 
+          closeAddressModal={closeAddressModal} 
+          isEditAddress={isEditAddress} 
+          setIsEditAddress={setIsEditAddress} 
+          editAddress={editAddress} 
+          setEditAddress={setEditAddress} 
+          setAddresses={setAddresses}
+        />
       )}
     </div>
   )

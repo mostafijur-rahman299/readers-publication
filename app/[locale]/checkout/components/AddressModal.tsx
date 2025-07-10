@@ -6,26 +6,46 @@ import useHttp from "@/hooks/useHttp"
 import { useState, useEffect } from "react"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 
-const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) => {
+const AddressModal = ({ closeAddressModal, isEditAddress, setIsEditAddress, editAddress, setEditAddress, setAddresses }: { closeAddressModal: () => void, isEditAddress: boolean, setIsEditAddress: (isEditAddress: boolean) => void, editAddress: any, setEditAddress: (editAddress: any) => void, setAddresses: (addresses: any[]) => void }) => {
   const t = useTranslations("checkout")
   const locale = useLocale()
   const [stateList, setStateList] = useState<any[]>([])
   const [cityList, setCityList] = useState<any[]>([])
   const [thanaList, setThanaList] = useState<any[]>([])
   const [unionList, setUnionList] = useState<any[]>([])
-  const [newAddress, setNewAddress] = useState<any>({})
+  const [addressData, setAddressData] = useState<any>({})
   const {sendRequests: fetchStateList} = useHttp()
   const {sendRequests: fetchCityList} = useHttp()
   const {sendRequests: fetchThanaList} = useHttp()
   const {sendRequests: fetchUnionList} = useHttp()
   const {sendRequests: createUpdateShippingAddress, isLoading: isCreatingUpdatingShippingAddress, error: createUpdateShippingAddressError} = useHttp()
 
+  useEffect(() => {
+    if(isEditAddress) {
+        setAddressData({
+            ...editAddress,
+            state: editAddress?.state?.id,
+            city: editAddress?.city?.id,
+            thana: editAddress?.thana?.id,
+            union: editAddress?.union?.id,
+        })
+    }
+  }, [isEditAddress])
+
   const handleNewAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setNewAddress((prev: any) => ({
-      ...prev,
-      [name]: value,
-    }))
+
+    if (name === "is_default") {
+      setAddressData((prev: any) => ({
+        ...prev,
+        is_default: e.target.checked,
+      }))
+    } else {
+    setAddressData((prev: any) => ({
+        ...prev,
+        [name]: value,
+      }))
+    }
   }
 
   useEffect(() => {
@@ -39,62 +59,76 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
   }, [])
 
   useEffect(() => {
-    if(newAddress?.state) {
+    if(addressData?.state) {
         fetchCityList({
             url_info: {
                 url: API_ENDPOINTS.CITY_LIST,
             },
             params: {
-                state_id: newAddress?.state,
+                state_id: addressData?.state
             }
         }, (data: any) => {
             setCityList(data)
         })
     }
-  }, [newAddress?.state])
+  }, [addressData?.state])
 
   useEffect(() => {
-    if(newAddress?.city) {
+    if(addressData?.city) {
         fetchThanaList({
             url_info: {
                 url: API_ENDPOINTS.THANA_LIST,
             },
             params: {
-                city_id: newAddress?.city,
+                city_id: addressData?.city
             }
         }, (data: any) => {
                 setThanaList(data)
             })
     }
-  }, [newAddress?.city])
+  }, [addressData?.city])
 
   useEffect(() => {
-    if(newAddress?.thana) {
+    if(addressData?.thana) {
         fetchUnionList({
             url_info: {
                 url: API_ENDPOINTS.UNION_LIST,
             },
             params: {
-                thana_id: newAddress?.thana,
+                thana_id: addressData?.thana
             }
         }, (data: any) => {
                 setUnionList(data)
             })
     }
-  }, [newAddress?.thana])
+  }, [addressData?.thana])
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     createUpdateShippingAddress({
         url_info: {
-            url: API_ENDPOINTS.SHIPPING_ADDRESS,
+            url: isEditAddress ? API_ENDPOINTS.SHIPPING_ADDRESS + addressData?.id + "/" : API_ENDPOINTS.SHIPPING_ADDRESS,
             isAuthRequired: true,
         },
-        method: "POST",
-        data: newAddress,
+        method: isEditAddress ? "PUT" : "POST",
+        data: addressData,
     }, (data: any) => {
-        console.log(data)
         closeAddressModal()
+        setIsEditAddress(false)
+        setEditAddress({})
+        if(isEditAddress) {
+            if(data?.is_default) {
+                setAddresses((prev: any[]) => prev.map((address: any) => address.id === data.id ? data : {...address, is_default: false}))
+            } else {
+                setAddresses((prev: any[]) => prev.map((address: any) => address.id === data.id ? data : address))  
+            }
+        } else {
+            if(data?.is_default) {
+                setAddresses((prev: any[]) => [data, ...prev.map((address: any) => ({...address, is_default: false}))])
+            } else {
+                setAddresses((prev: any[]) => [data, ...prev.map((address: any) => ({...address, is_default: false}))])
+            }
+        }
     })
   }
 
@@ -124,16 +158,16 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">{t("address_type") || "Address Type"}</label>
                         <div className="flex flex-col sm:flex-row gap-2">
-                            {["HOME", "OFFICE", "OTHER"].map((type) => (
+                            {["home", "office", "other"].map((type) => (
                                 <label key={type} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 flex-1 justify-center">
                                     <input 
                                         type="radio" 
                                         name="address_type" 
                                         value={type} 
-                                        checked={newAddress.address_type === type} 
+                                        checked={addressData?.address_type === type} 
                                         onChange={handleNewAddressChange} 
-                                        className="sr-only peer" 
-                                        required={type === "HOME"}
+                                        className="sr-only peer"
+                                        required={true}
                                     />
                                     <div className="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 peer-checked:bg-blue-500">
                                         <div className="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
@@ -148,7 +182,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("full_name") || "Full Name"}</label>
                             <Input
                                 name="name"
-                                value={newAddress.name || ""}
+                                value={addressData.name || ""}
                                 onChange={handleNewAddressChange}
                                 placeholder={"e.g. John Doe"}
                                 className="w-full"
@@ -159,7 +193,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("phone") || "Phone"}</label>
                             <Input
                                 name="phone"
-                                value={newAddress.phone || ""}
+                                value={addressData.phone || ""}
                                 onChange={handleNewAddressChange}
                                 placeholder={"e.g. +88017xxxxxxxx"}
                                 className="w-full"
@@ -173,7 +207,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                         <Input
                             name="email"
                             type="email"
-                            value={newAddress.email || ""}
+                            value={addressData.email || ""}
                             onChange={handleNewAddressChange}
                             placeholder={"e.g. john.doe@example.com"}
                             className="w-full"
@@ -185,7 +219,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("state") || "State"}</label>
                             <select
                                 name="state"
-                                value={newAddress.state || ""}
+                                value={addressData?.state || ""}
                                 onChange={handleNewAddressChange}
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 required
@@ -200,7 +234,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("city") || "City"}</label>
                             <select
                                 name="city"
-                                value={newAddress.city || ""}
+                                value={addressData?.city || ""}
                                 onChange={handleNewAddressChange}
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 required
@@ -218,7 +252,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("thana") || "Thana"}</label>
                             <select
                                 name="thana"
-                                value={newAddress.thana || ""}
+                                value={addressData?.thana || ""}
                                 onChange={handleNewAddressChange}
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 required
@@ -233,7 +267,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                             <label className="block text-sm font-medium text-gray-700 mb-2">{t("union")}</label>
                             <select
                                 name="union"
-                                value={newAddress.union || ""}
+                                value={addressData?.union || ""}
                                 onChange={handleNewAddressChange}
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 required
@@ -250,7 +284,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                         <label className="block text-sm font-medium text-gray-700 mb-2">{t("address_details") || "Address Details"}</label>
                         <textarea
                             name="detail_address"
-                            value={newAddress.detail_address || ""}
+                            value={addressData.detail_address || ""}
                             onChange={handleNewAddressChange}
                             placeholder={t("address_details_placeholder")}
                             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
@@ -263,7 +297,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                         <label className="block text-sm font-medium text-gray-700 mb-2">{t("note") || "Note"}</label>
                         <textarea
                             name="note"
-                            value={newAddress.note || ""}
+                            value={addressData.note || ""}
                             onChange={handleNewAddressChange}
                             placeholder={t("note_placeholder")}
                             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
@@ -275,7 +309,7 @@ const AddressModal = ({ closeAddressModal }: { closeAddressModal: () => void }) 
                         <input
                             type="checkbox"
                             name="is_default"
-                            checked={newAddress.is_default || false}
+                            checked={addressData.is_default || false}
                             onChange={handleNewAddressChange}
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
