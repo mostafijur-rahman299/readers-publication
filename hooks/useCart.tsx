@@ -16,7 +16,7 @@ const useCart = () => {
   const dispatch = useDispatch()
 
   // Fetch cart items
-  const fetchCartItemsAuthUser = async () => {
+  const fetchCartItemsAuthUser = async (params: any = {}) => {
     setLoading(true)
     setError(null)
     
@@ -25,6 +25,7 @@ const useCart = () => {
         url_info: {
           url: API_ENDPOINTS.CART_LIST,
         },
+        params: params,
       }, (response: any) => {
         setCartItems(response)
         setLoading(false)
@@ -42,9 +43,9 @@ const useCart = () => {
     }
   }
 
-  const fetchCartItems = async () => {
+  const fetchCartItems = async (params: any = {}) => {
     if (isAuthUser) {
-      fetchCartItemsAuthUser()
+      fetchCartItemsAuthUser(params)
     } else {
       fetchCartItemsUnAuthUser()
     }
@@ -130,7 +131,7 @@ const useCart = () => {
         method: 'DELETE',
       }, (response: any) => {
         setCartItems(prev => prev.filter((item: any) => item.uuid !== cartItemId))
-        dispatch(removeCartItem(cartItemId))
+        dispatch(removeCartItem([cartItemId]))
         setLoading(false)
       })
     } catch (err: any) {
@@ -145,7 +146,7 @@ const useCart = () => {
       const cartItemsArray = JSON.parse(cartItems)
       localStorage.setItem('cartItems', JSON.stringify(cartItemsArray.filter((item: any) => item.uuid !== cartItemId)))
       setCartItems(prev => prev.filter((item: any) => item.uuid !== cartItemId))
-      dispatch(removeCartItem(cartItemId))
+      dispatch(removeCartItem([cartItemId]))
     }
   }
 

@@ -38,4 +38,7 @@ export const API_ENDPOINTS = {
   THANA_LIST: `${BACKEND_URL}/core/api/v1/thana-list/`,
   UNION_LIST: `${BACKEND_URL}/core/api/v1/union-list/`,
   SHIPPING_ADDRESS: `${BACKEND_URL}/shipping-address/api/v1/`,
+
+  // Order
+  ORDER_CREATE: `${BACKEND_URL}/order/api/v1/`,
 }

@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import { useTranslations, useLocale } from "next-intl"
-import { Banknote, Smartphone, RotateCcw, Coins, Info, Edit, Trash2, Plus, X } from "lucide-react"
+import { Banknote, RotateCcw, Edit, Trash2, Plus } from "lucide-react"
 import Image from "next/image"
 import AddressModal from "./components/AddressModal"
 import useHttp from "@/hooks/useHttp"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
 import useCart from "@/hooks/useCart"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
+import { removeCartItem } from "@/store/cart"
+import { useRouter } from "next/navigation"
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout")
@@ -25,15 +28,21 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<number | null>(null)
   // Modal state
   const [showAddressModal, setShowAddressModal] = useState(false)
-  const {sendRequests: fetchShippingAddress, isLoading: fetchingShippingAddress} = useHttp()
-  const {sendRequests: deleteShippingAddress, isLoading: deletingShippingAddress} = useHttp()
+  const {sendRequests: fetchShippingAddress} = useHttp()
+  const {sendRequests: deleteShippingAddress} = useHttp()
+  const {sendRequests: createOrder} = useHttp()
   // Address form state
   const [isEditAddress, setIsEditAddress] = useState<boolean>(false)
   const [editAddress, setEditAddress] = useState<any>({})
-
   // Addresses state (make it mutable)
   const [addresses, setAddresses] = useState<any[]>([])
-
+  // Mobile payment state
+  const [mobileNumber, setMobileNumber] = useState<string>("")
+  const [referenceNumber, setReferenceNumber] = useState<string>("")
+  const [commonError, setCommonError] = useState<string>("")
+  const dispatch = useDispatch()
+  const router = useRouter()
+  
   useEffect(() => {
     fetchShippingAddress({
       url_info: {
@@ -42,36 +51,27 @@ export default function CheckoutPage() {
       }
     }, (res: any) => {
       setAddresses(res)
+      setSelectedAddress(res.find((address: any) => address.is_default)?.id || null)
     })
   }, [])
   
   useEffect(() => {
-    fetchCartItems()
+    fetchCartItems({
+      is_selected: true
+    })
   }, [isAuthenticated])
 
   const DELIVERY_CHARGE = generalData?.delivery_charge || 0
 
-  const subtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.discounted_price * item.quantity, 0)
-  const originalSubtotal = cartItems.filter((item) => item.is_selected).reduce((sum, item) => sum + item.book_details.price * item.quantity, 0)
-  const totalSavings = originalSubtotal - subtotal
+  const subtotal = cartItems.reduce((sum, item) => sum + item.book_details.discounted_price * item.quantity, 0)
+  const originalSubtotal = cartItems.reduce((sum, item) => sum + item.book_details.price * item.quantity, 0)
   const total = subtotal + DELIVERY_CHARGE
-
-  console.log(cartItems)
 
   const handlePaymentSelection = (method: string) => {
     setSelectedPayment(method)
-  }
-
-  const handleSubmitOrder = () => {
-    if (!selectedPayment) {
-      alert("Please select a payment method.")
-      return
-    }
-    if (!termsAccepted) {
-      alert("Please accept the terms and conditions.")
-      return
-    }
-    alert(`Order placed successfully! Payment Method: ${selectedPayment}`)
+    // Reset mobile payment fields when changing payment method
+    setMobileNumber("")
+    setReferenceNumber("")
   }
 
   // Modal handlers
@@ -105,6 +105,75 @@ export default function CheckoutPage() {
       method: "DELETE"
     }, (res: any) => {
       setAddresses((prev: any[]) => prev.filter((add: any) => add.id !== addressId))
+    })
+  }
+
+  // Payment instructions for each mobile payment method
+  const paymentInstructions = {
+    bkash: {
+      title: t("bkash_payment"),
+      instructions: [
+        t("bkash_instruction"),
+      ],
+      merchantNumber: "01XXXXXXXXX"
+    },
+    nagad: {
+      title: t("nagad_payment"),
+      instructions: [
+        t("nagad_instruction")
+      ],
+      merchantNumber: "01XXXXXXXXX"
+    },
+    rocket: {
+      title: t("rocket_payment"),
+      instructions: [
+        t("rocket_instruction")
+      ],
+      merchantNumber: "01XXXXXXXXX"
+    }
+  }
+
+  const handleSubmitOrder = () => {
+    // Clear error
+    setCommonError("")
+
+    if(!selectedAddress) {
+      setCommonError("Please select or add a shipping address.")
+      return
+    }
+    if (!selectedPayment) {
+      setCommonError("Please select a payment method.")
+      return
+    }
+    if (!termsAccepted) {
+      setCommonError("Please accept the terms and conditions.")
+      return
+    }
+    if (["bkash", "nagad", "rocket"].includes(selectedPayment) && (!mobileNumber || !referenceNumber)) {
+      setCommonError("Please provide mobile number and reference number for mobile payment.")
+      return
+    }
+
+    createOrder({
+      url_info: {
+        url: API_ENDPOINTS.ORDER_CREATE,
+        isAuthRequired: true
+      },
+      method: "POST",
+      data: {
+        shipping_address_id: selectedAddress,
+        payment_method: selectedPayment,
+        mobile_number: mobileNumber,
+        reference_number: referenceNumber
+      }
+    }, (res: any) => {
+      console.log(res)
+      let cartItemsArray = cartItems.map((item: any) => item.uuid)
+      dispatch(removeCartItem(cartItemsArray))
+
+      setTimeout(() => {
+        router.push(`/checkout/order-success?order_id=${res.order_id}`)
+      }, 1000)
     })
   }
 
@@ -275,7 +344,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Credit/Debit Cards */}
-                  <div>
+                  {/* <div>
                     <h3 className="font-medium text-gray-800 mb-1 sm:mb-2 text-sm sm:text-base">{t("card")}</h3>
                     <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3">{t("pay_with_card")}</p>
 
@@ -287,9 +356,7 @@ export default function CheckoutPage() {
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div
-                          className={`w-4 h-4 rounded-full border-2 ${
-                            selectedPayment === "card" ? "border-blue-500 bg-blue-500" : "border-gray-300"
-                          }`}
+                          className={`w-4 h-4 rounded-full border-2 ${selectedPayment === "card" ? "border-blue-500 bg-blue-500" : "border-gray-300"}`}
                         >
                           {selectedPayment === "card" && (
                             <div className="w-full h-full rounded-full bg-white scale-50"></div>
@@ -300,7 +367,45 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
+
+                  {/* Mobile Payment Details */}
+                  {["bkash", "nagad", "rocket"].includes(selectedPayment) && (
+                    <div className="border rounded-lg p-4 sm:p-6 bg-gray-50">
+                      <h3 className="font-medium text-gray-800 mb-2 sm:mb-3 text-sm sm:text-base">
+                        {paymentInstructions[selectedPayment as keyof typeof paymentInstructions].title}
+                      </h3>
+                      <div className="space-y-3 sm:space-y-4">
+                        <div>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2">{t("merchant_number")}: <strong>{paymentInstructions[selectedPayment as keyof typeof paymentInstructions].merchantNumber}</strong></p>
+                          <ul className="list-disc pl-4 sm:pl-5 text-xs sm:text-sm text-gray-600 space-y-1">
+                            {paymentInstructions[selectedPayment as keyof typeof paymentInstructions].instructions.map((instruction, index) => (
+                              <li key={index}>{instruction}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <label className="text-xs sm:text-sm text-gray-600 block mb-1">{t("mobile_number")}</label>
+                          <Input
+                            placeholder={t("enter_mobile_number")}
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            className="text-sm"
+                          />
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1">({t("mobile_help_text")})</p>
+                        </div>
+                        <div>
+                          <label className="text-xs sm:text-sm text-gray-600 block mb-1">{t("reference_number")}</label>
+                          <Input
+                            placeholder={t("enter_reference_number")}
+                            value={referenceNumber}
+                            onChange={(e) => setReferenceNumber(e.target.value)}
+                            className="text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Terms and Conditions */}
                   <div className="flex items-start gap-1 sm:gap-2 pt-3 sm:pt-4">
@@ -312,7 +417,7 @@ export default function CheckoutPage() {
                     <label htmlFor="terms" className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                       {t("policy_agree")}
                       <a href="#" className="text-blue-600 hover:underline">
-                       {" "} {t("terms_and_conditions")}
+                        {" "} {t("terms_and_conditions")}
                       </a>
                     </label>
                   </div>
@@ -325,6 +430,9 @@ export default function CheckoutPage() {
                   >
                     {t("confirm_order")} ৳{total.toLocaleString()}
                   </Button>
+                  {commonError && (
+                    <p className="text-red-500 text-sm sm:text-base text-center">{commonError}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -342,7 +450,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1">
-                          <span className="text-gray-600 text-sm sm:text-base">{t("delivery_charge")}</span>
+                      <span className="text-gray-600 text-sm sm:text-base">{t("delivery_charge")}</span>
                     </div>
                     <span className="font-medium text-sm sm:text-base">৳{DELIVERY_CHARGE.toLocaleString()}</span>
                   </div>
@@ -357,24 +465,6 @@ export default function CheckoutPage() {
                     <span>৳{total.toLocaleString()}</span>
                   </div>
                 </div>
-
-                {/* Promo Code Section */}
-                {/* <div className="mb-4 sm:mb-6">
-                  <h3 className="font-medium mb-2 sm:mb-3 text-gray-800 text-sm sm:text-base">Apply Voucher or Promo Code</h3>
-                  <div className="flex flex-col xs:flex-row gap-2">
-                    <Input
-                      placeholder="Enter your code here"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="flex-1 text-sm"
-                    />
-                    <Button onClick={applyPromoCode} className="bg-blue-500 hover:bg-blue-600 text-white px-4 sm:px-6 text-sm sm:text-base">
-                      Apply
-                    </Button>
-                  </div>
-                </div> */}
-
-                {/* Savings */}
               </div>
             </div>
           </div>
@@ -395,4 +485,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-

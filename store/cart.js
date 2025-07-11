@@ -19,7 +19,7 @@ const cartSlice = createSlice({
       }
     },
     removeCartItem: (state, action) => {
-      state.cart_items = state.cart_items.filter((item) => item.uuid !== action.payload);
+      state.cart_items = state.cart_items.filter((item) => !action.payload.includes(item.uuid));
     },
     updateSelectionStatusChange: (state, action) => {
       console.log(action.payload.ids)

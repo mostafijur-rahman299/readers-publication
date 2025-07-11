@@ -216,7 +216,19 @@
         "address_type": "Address Type",
         "is_default": "This is my default address",
         "processing": "Processing...",
-        "delivery_charge": "Delivery Charge"
+        "delivery_charge": "Delivery Charge",
+        "merchant_number": "Merchant Number",
+        "mobile_number": "Mobile Number",
+        "reference_number": "Reference Number",
+        "enter_mobile_number": "Enter your mobile number",
+        "enter_reference_number": "Enter your reference number",
+        "bkash_payment": "Bkash Payment",
+        "nagad_payment": "Nagad Payment",
+        "rocket_payment": "Rocket Payment",
+        "mobile_help_text": "Enter mobile number that you have used to pay.",
+        "bkash_instruction": "1. Open Bkash app\n2. Select Send Money\n3. Enter Merchant Number\n4. Enter Amount\n5. Enter Reference Number\n6. Confirm Transaction",
+        "nagad_instruction": "1. Open Nagad app\n2. Select Send Money\n3. Enter Merchant Number\n4. Enter Amount\n5. Enter Reference Number\n6. Confirm Transaction",
+        "rocket_instruction": "1. Open Rocket app\n2. Select Send Money\n3. Enter Merchant Number\n4. Enter Amount\n5. Enter Reference Number\n6. Confirm Transaction"
     },
     "books": {
         "title": "All Books",
