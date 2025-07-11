@@ -21,6 +21,10 @@
         "about_us": "About Us",
         "profile": "Profile"
     },
+    "pagination": {
+        "previous": "Previous",
+        "next": "Next"
+    },
     "footer": {
         "about": "About",
         "contact": "Contact",
@@ -282,7 +286,18 @@
             "track_order": "Track Order",
             "browse_books": "Browse Books",
             "no_orders": "No orders yet",
-            "no_orders_message": "You haven't ordered any books yet. Browse our book collection and order your favorite books."
+            "no_orders_message": "You haven't ordered any books yet. Browse our book collection and order your favorite books.",
+            "items": "items",
+            "pending": "Your order has been placed and is awaiting processing.",
+            "processing": "We are currently preparing your order.",
+            "ready_to_ship": "Your order is packed and ready to be shipped.",
+            "shipped": "Your order is on its way!",
+            "delivered": "Your order has been delivered successfully.",
+            "completed": "Your order is complete. Thank you for shopping with us!",
+            "cancelled": "This order has been cancelled. If this was a mistake, please contact support.",
+            "completed_orders": "Completed Orders",
+            "pending_orders": "Pending Orders",
+            "canceled_orders": "Canceled Orders"
        },
        "wishlist": {
             "title": "Wishlist",

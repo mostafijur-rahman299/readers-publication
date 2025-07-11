@@ -1,3 +1,5 @@
+"use client"
+
 import { Mail, User } from 'lucide-react'
 import { Phone } from 'lucide-react'
 import { MapPin } from 'lucide-react'
