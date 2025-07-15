@@ -42,4 +42,5 @@ export const API_ENDPOINTS = {
   // Order
   ORDER_CREATE: `${BACKEND_URL}/order/api/v1/`,
   ORDER_LIST: `${BACKEND_URL}/order/api/v1/`,
+  ORDER_DETAIL: (orderId) => `${BACKEND_URL}/order/api/v1/${orderId}/`,
 }
