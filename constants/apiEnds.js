@@ -14,6 +14,10 @@ export const API_ENDPOINTS = {
   BLOG_LIST: `${BACKEND_URL}/blog/api/v1/list/`,
   BLOG_DETAIL: (slug) => `${BACKEND_URL}/blog/api/v1/detail/${slug}/`,
   TESTIMONIALS: `${BACKEND_URL}/core/api/v1/testimonials/`,
+
+  // Book
+  WISHLIST: `${BACKEND_URL}/user/api/v1/wishlist/`,
+  WISHLIST_DELETE: (id) => `${BACKEND_URL}/user/api/v1/wishlist/${id}/`,
   BOOKS: `${BACKEND_URL}/book/api/v1/list/`,
   BOOK_DETAIL: (slug) => `${BACKEND_URL}/book/api/v1/detail/${slug}/`,
   SPECIAL_PACKAGES: `${BACKEND_URL}/book/api/v1/special-packages/`,

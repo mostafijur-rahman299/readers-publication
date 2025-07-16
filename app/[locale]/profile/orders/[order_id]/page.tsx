@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, Calendar, CreditCard, Package, Truck, CheckCircle, Clock, User } from "lucide-react"
+import { ArrowLeft, CreditCard, Package, Truck, CheckCircle, Clock, MapPin, Phone, Mail } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -17,109 +17,185 @@ import { useTranslation } from "react-i18next"
 export default function Component() {
   const { order_id } = useParams()
   const [order, setOrder] = useState<any>(null)
-  const {sendRequests: fetchOrderDetails, isLoading: isFetchingOrderDetails} = useHttp()
-  const {t} = useTranslation()
+  const { sendRequests: fetchOrderDetails, isLoading: isFetchingOrderDetails } = useHttp()
+  const { t } = useTranslation()
   const locale = useLocale()
 
   useEffect(() => {
-    fetchOrderDetails({
-      url_info: {
-        url: API_ENDPOINTS.ORDER_DETAIL(order_id as string),
-        isAuthRequired: true,
-      }
-    }, (res: any) => {
-      setOrder(res)
-    })
+    fetchOrderDetails(
+      {
+        url_info: {
+          url: API_ENDPOINTS.ORDER_DETAIL(order_id as string),
+          isAuthRequired: true,
+        },
+      },
+      (res: any) => {
+        setOrder(res)
+      },
+    )
   }, [order_id])
 
   const trackingSteps = [
-    { status: "Order Placed", completed: ["pending", "processing", "ready_to_ship", "shipped", "delivered", "completed"].includes(order?.status) },
-    { status: "Processing", completed: ["processing", "ready_to_ship", "shipped", "delivered", "completed"].includes(order?.status) },
-    { status: "Shipped", completed: ["ready_to_ship", "shipped", "delivered", "completed"].includes(order?.status) },
-    { status: "Delivered", completed: ["delivered", "completed"].includes(order?.status) },
-    { status: "Completed", completed: ["completed"].includes(order?.status) }
+    {
+      status: "Placed",
+      fullStatus: "Order Placed",
+      key: "pending",
+      completed: ["pending", "processing", "ready_to_ship", "shipped", "delivered", "completed"].includes(
+        order?.status,
+      ),
+      is_active: false,
+    },
+    {
+      status: "Processing",
+      fullStatus: "Processing",
+      key: "processing",
+      completed: ["ready_to_ship", "shipped", "delivered", "completed"].includes(order?.status),
+      is_active: order?.status === "processing",
+    },
+    {
+      status: "Ready",
+      fullStatus: "Ready to Ship",
+      key: "ready_to_ship",
+      completed: ["shipped", "delivered", "completed"].includes(order?.status),
+      is_active: order?.status === "ready_to_ship",
+    },
+    {
+      status: "Shipped",
+      fullStatus: "Shipped",
+      key: "shipped",
+      completed: ["delivered", "completed"].includes(order?.status),
+      is_active: order?.status === "shipped",
+    },
+    {
+      status: "Delivered",
+      fullStatus: "Delivered",
+      key: "delivered",
+      completed: ["delivered", "completed"].includes(order?.status),
+      is_active: order?.status === "delivered",
+    },
   ]
 
+  if (isFetchingOrderDetails) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-teal-600"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" asChild className="hover:bg-gray-100 transition-colors">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - Fully Responsive */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <Button variant="ghost" size="sm" asChild className="hover:bg-gray-100 flex-shrink-0 p-2 sm:px-3">
               <Link href="/profile/orders">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">Back</span>
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Order #{order?.order_id}</h1>
-            <div className="w-8" /> {/* Spacer for alignment */}
+
+            <div className="text-center flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
+                Order #{order?.order_id}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+                {new Date(order?.created_at).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div className="w-8 sm:w-12 flex-shrink-0" />
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Order Status */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-4">
-                <CardTitle className="flex items-center gap-3 text-xl text-white">
-                  <Package className="h-6 w-6" />
-                  Order Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {trackingSteps.map((step, index) => (
-                    <div key={index} className="flex items-center gap-4">
-                      <div className="flex flex-col items-center">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                            step.completed ? "bg-teal-600 text-white" : "bg-gray-200 text-gray-400"
-                          }`}
-                        >
-                          {step.completed ? <CheckCircle className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                        </div>
-                        {index < trackingSteps.length - 1 && (
-                          <div
-                            className={`w-0.5 h-8 mt-1 transition-colors duration-300 ${
-                              step.completed ? "bg-teal-600" : "bg-gray-200"
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className={`text-base font-medium ${step.completed ? "text-gray-900" : "text-gray-500"}`}>
-                            {step.status}
-                          </h3>
-                          <Badge
-                            variant={step.completed ? "default" : "secondary"}
-                            className={`${
-                              step.completed ? "bg-teal-100 text-teal-800" : "bg-gray-100 text-gray-600"
-                            } text-sm px-3 py-1`}
-                          >
-                            {step.completed ? "Completed" : "Pending"}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+        <div className="space-y-4 sm:space-y-6">
+          {/* Order Status - Mobile Optimized Horizontal */}
 
-            {/* Order Items */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-4">
-                <CardTitle className="text-xl text-white">Order Items</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {order?.order_items.map((item: any) => (
-                    <div key={item.id} className="flex gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="relative w-24 h-32 overflow-hidden rounded-lg">
+          {order?.status !== "cancelled" &&<Card className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-3 sm:py-4 px-4 sm:px-6">
+              <CardTitle className="flex items-center gap-2 text-white text-base sm:text-lg">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+                Order Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="relative">
+                {/* Steps - Responsive */}
+                <div className="relative flex justify-between items-center">
+                  {trackingSteps.map((step, index) => {
+                    const isActive = step.is_active
+                    const isCompleted = step.completed
+
+                    return (
+                      <div key={index} className="flex flex-col items-center flex-1 max-w-none relative">
+                        {/* Connecting Line to Next Step */}
+                        {index < trackingSteps.length - 1 && (
+                          <div className="absolute top-3 sm:top-4 left-1/2 w-full h-0.5 z-0">
+                            <div
+                              className={`h-full transition-all duration-500 ${
+                                isCompleted ? "bg-teal-500" : "bg-gray-200"
+                              }`}
+                            />
+                          </div>
+                        )}
+
+                        {/* Step Circle */}
+                        <div
+                          className={`
+                          w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 z-10 border-2 relative
+                          ${
+                            isActive
+                              ? "border-orange-500 bg-orange-500"
+                              : isCompleted
+                                ? "border-teal-500 bg-teal-500"
+                                : "border-gray-300 bg-white"
+                          }
+                        `}
+                        >
+                          {isActive ? (
+                            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                          ) : isCompleted ? (
+                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                          ) : (
+                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gray-300" />
+                          )}
+                        </div>
+
+                        {/* Step Label */}
+                        <div className="mt-2 sm:mt-3 text-center px-1">
+                          <p
+                            className={`text-xs sm:text-sm font-medium leading-tight ${
+                              isActive ? "text-orange-600" : isCompleted ? "text-teal-600" : "text-gray-400"
+                            }`}
+                          >
+                            <span className="sm:hidden">{step.status}</span>
+                            <span className="hidden sm:inline">{step.fullStatus}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>}
+
+          {/* Main Content Grid - Responsive */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+            {/* Left Column */}
+            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+              {/* Order Items - Mobile Optimized */}
+              <Card>
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                  <CardTitle className="text-base sm:text-lg">Items ({order?.order_items?.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
+                  {order?.order_items?.map((item: any) => (
+                    <div key={item.id} className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="relative w-12 h-16 sm:w-16 sm:h-20 flex-shrink-0 overflow-hidden rounded-md">
                         <Image
                           src={item.book.cover_image || "/images/book-skeleton.jpg"}
                           alt={item.book.title}
@@ -127,161 +203,148 @@ export default function Component() {
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{item.book.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
-                        </div>
-                        <div className="flex justify-between items-end">
-                          <span className="text-sm text-gray-600">Unit Price: ৳{item.book.price}</span>
-                          <span className="text-lg font-bold text-teal-700">৳{item.price}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2 leading-tight">
+                          {item.book.title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1">Qty: {item.quantity}</p>
+                        <div className="flex justify-between items-center mt-2 gap-2">
+                          <span className="text-xs sm:text-sm text-gray-500 truncate">৳{item.book.price} each</span>
+                          <span className="font-semibold text-teal-600 text-sm sm:text-base flex-shrink-0">
+                            ৳{item.price}
+                          </span>
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Shipping Information */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-4">
-                <CardTitle className="flex items-center gap-3 text-xl text-white">
-                  <Truck className="h-6 w-6" />
-                  Shipping Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
+              {/* Shipping & Contact Info - Responsive Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <Card>
+                  <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                      Delivery Address
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 px-4 sm:px-6 pb-4 sm:pb-6">
                     <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-2">Contact Information</h4>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <p>Name: {order?.shipping_address?.name}</p>
-                        {order?.shipping_address?.email && <p>Email: {order?.shipping_address?.email}</p>}
-                        <p>Phone: {order?.shipping_address?.phone}</p>
-                      </div>
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">{order?.shipping_address?.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                        {locale === "bn"
+                          ? `${order?.shipping_address?.union_name_bn}, ${order?.shipping_address?.thana_name_bn}, ${order?.shipping_address?.city_name_bn}`
+                          : `${order?.shipping_address?.union_name}, ${order?.shipping_address?.thana_name}, ${order?.shipping_address?.city_name}`}
+                      </p>
+                      {order?.shipping_address?.detail_address && (
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
+                          {order?.shipping_address?.detail_address}
+                        </p>
+                      )}
                     </div>
-                    {order?.shipping_address?.note && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Phone className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="break-all">{order?.shipping_address?.phone}</span>
+                      </div>
+                      {order?.shipping_address?.email && (
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                          <Mail className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                          <span className="break-all">{order?.shipping_address?.email}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
+                      Payment Info
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 px-4 sm:px-6 pb-4 sm:pb-6">
+                    <div>
+                      <p className="text-xs sm:text-sm text-gray-500 mb-1">Payment Method</p>
+                      <Badge
+                        variant={order?.payment_details?.payment_method === "cod" ? "secondary" : "default"}
+                        className="text-xs"
+                      >
+                        {order?.payment_details?.payment_method === "cod"
+                          ? "Cash on Delivery"
+                          : order?.payment_details?.payment_method?.toUpperCase()}
+                      </Badge>
+                    </div>
+                    {order?.payment_details?.payment_status && (
                       <div>
-                        <h4 className="text-base font-semibold text-gray-900 mb-2">Special Instructions</h4>
-                        <p className="text-sm text-gray-600">{order?.shipping_address?.note}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 mb-1">Status</p>
+                        <Badge
+                          variant={order?.payment_details?.payment_status === "paid" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {order?.payment_details?.payment_status?.toUpperCase()}
+                        </Badge>
                       </div>
                     )}
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-2">Delivery Address</h4>
-                      <p className="text-sm text-gray-600">
-                        {locale === "bn" ? (
-                          <>
-                            {order?.shipping_address?.union_name_bn}, {order?.shipping_address?.thana_name_bn},
-                            {order?.shipping_address?.city_name_bn}, {order?.shipping_address?.state_name_bn}
-                          </>
-                        ) : (
-                          <>
-                            {order?.shipping_address?.union_name}, {order?.shipping_address?.thana_name},
-                            {order?.shipping_address?.city_name}, {order?.shipping_address?.state_name}
-                          </>
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-2">{order?.shipping_address?.detail_address}</p>
-                    </div>
-                    {(order?.shipping_address?.courier_service_name || order?.shipping_address?.courier_service_tracking_id) && (
+                    {order?.payment_details?.mobile_number && (
                       <div>
-                        <h4 className="text-base font-semibold text-gray-900 mb-2">Courier Information</h4>
-                        <p className="text-sm text-gray-600">
-                          {order?.shipping_address?.courier_service_name} | {order?.shipping_address?.courier_service_tracking_id}
+                        <p className="text-xs sm:text-sm text-gray-500">Account</p>
+                        <p className="text-xs sm:text-sm font-medium break-all">
+                          {order?.payment_details?.mobile_number}
                         </p>
                       </div>
                     )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Order Summary */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-4">
-                <CardTitle className="text-xl text-white">Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between text-base">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">৳{order?.sub_total}</span>
-                  </div>
-                  <div className="flex justify-between text-base">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium">৳{order?.shipping_cost}</span>
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span className="text-teal-700">৳{parseFloat(order?.sub_total) + parseFloat(order?.shipping_cost)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Information */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-teal-600 to-teal-700 py-4">
-                <CardTitle className="flex items-center gap-3 text-xl text-white">
-                  <CreditCard className="h-6 w-6" />
-                  Payment Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="grid gap-4">
-                    <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-2">Payment Method</h4>
-                      <div className={`inline-block px-4 py-2 rounded-lg text-white text-sm font-medium ${
-                        order?.payment_details?.payment_method === "cod" ? "bg-green-600" :
-                        order?.payment_details?.payment_method === "bkash" ? "bg-pink-600" :
-                        "bg-blue-600"
-                      }`}>
-                        {order?.payment_details?.payment_method === "cod" ? "Cash on Delivery" :
-                         order?.payment_details?.payment_method?.toUpperCase()}
-                      </div>
+            {/* Right Column - Order Summary - Mobile Optimized */}
+            <div className="space-y-4 sm:space-y-6">
+              <Card className="xl:sticky xl:top-24">
+                <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+                  <CardTitle className="text-base sm:text-lg">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Subtotal</span>
+                      <span className="font-medium">৳{order?.sub_total}</span>
                     </div>
-
-                    {order?.payment_details?.payment_status && (
-                      <div>
-                        <h4 className="text-base font-semibold text-gray-900 mb-2">Payment Status</h4>
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                          order?.payment_details?.payment_status === "paid"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {order?.payment_details?.payment_status?.toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Shipping</span>
+                      <span className="font-medium">৳{order?.shipping_cost}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between font-semibold text-base sm:text-lg">
+                      <span>Total</span>
+                      <span className="text-teal-600">
+                        ৳{Number.parseFloat(order?.sub_total || 0) + Number.parseFloat(order?.shipping_cost || 0)}
+                      </span>
+                    </div>
                   </div>
 
-                  {order?.payment_details && order?.payment_details?.payment_method !== "cod" && (
-                    <div className="space-y-4 border-t pt-4">
-                      <div>
-                        <h4 className="text-base font-semibold text-gray-900 mb-2">Transaction Details</h4>
-                        <div className="space-y-2 text-sm text-gray-600">
-                          <p>Account: {order?.payment_details?.mobile_number}</p>
-                          <p>Reference: {order?.payment_details?.reference_number}</p>
-                          {order?.payment_details?.transaction_id && (
-                            <p>Transaction ID: {order?.payment_details?.transaction_id}</p>
-                          )}
-                          <p>Date: {new Date(order?.payment_details?.payment_date).toLocaleDateString()}</p>
-                        </div>
+                  {order?.shipping_address?.courier_service_name && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Truck className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <span className="text-sm font-medium">Courier Service</span>
                       </div>
+                      <p className="text-sm text-gray-600 break-words">
+                        {order?.shipping_address?.courier_service_name}
+                      </p>
+                      {order?.shipping_address?.courier_service_tracking_id && (
+                        <p className="text-xs text-gray-500 mt-1 break-all">
+                          Tracking: {order?.shipping_address?.courier_service_tracking_id}
+                        </p>
+                      )}
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

@@ -52,6 +52,7 @@ export default function BookDetailPage() {
   const { sendRequests: fetchRelatedBooks, isLoading: isRelatedBooksLoading } = useHttp()
   const router = useRouter()
   const { addToCart } = useCart()
+  const { sendRequests: addToWishlist, isLoading: isAddingToWishlist } = useHttp()  
 
   // Carousel state for related books
   const [relatedCarouselIndex, setRelatedCarouselIndex] = useState(0)
@@ -223,6 +224,19 @@ export default function BookDetailPage() {
       }
     }
     addToCart(book, cartQuantity)
+  }
+
+  const handleAddToWishlist = () => {
+    addToWishlist({
+      url_info: {
+        url: API_ENDPOINTS.WISHLIST,
+      },
+      method: "POST",
+      data: {
+        book_id: bookData.id,
+      },
+    }, (data: any) => {
+    })
   }
 
   return (
@@ -467,7 +481,8 @@ export default function BookDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={toggleWishlist}
+                  onClick={handleAddToWishlist}
+                  disabled={isAddingToWishlist}
                   className={`h-7 w-7 ${isWishlisted ? "text-red-500 border-red-500" : ""}`}
                 >
                   <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-current" : ""}`} />

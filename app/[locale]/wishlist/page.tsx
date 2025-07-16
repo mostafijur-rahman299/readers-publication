@@ -1,12 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Heart, Trash2, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import { useLocale, useTranslations } from 'next-intl'
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import Pagination from "@/components/pagination"
+import useCart from "@/hooks/useCart"
 
 type Book = {
   id: number
@@ -19,26 +23,63 @@ type Book = {
 export default function WishlistPage() {
   const t = useTranslations('wishlist')
   const currentLocale = useLocale()
+  const [wishlist, setWishlist] = useState<Book[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const {sendRequests, isLoading} = useHttp() 
+  const {addToCart} = useCart()
+  const {sendRequests: deleteWishlist, isLoading: isDeleting} = useHttp()
 
-  const [wishlist, setWishlist] = useState<Book[]>([
-    {
-      id: 1,
-      title: "Deep Work",
-      author: "Cal Newport",
-      cover: "/books/deep-work.jpg",
-      price: "$14.99"
-    },
-    {
-      id: 2,
-      title: "Atomic Habits",
-      author: "James Clear",
-      cover: "/books/atomic-habits.jpg",
-      price: "$18.50"
+  const fetchWishlist = (params: any) => {
+    sendRequests({
+      url_info: {
+        url: API_ENDPOINTS.WISHLIST,
+      },
+      params: params,
+    }, (data: any) => { 
+      setWishlist(data.results)
+      setTotalPages(data.total_pages)
+    })
+  }
+
+  useEffect(() => {
+    fetchWishlist({
+       page: currentPage
+    })
+}, [currentPage])
+
+  const handleDeleteWishlist = (id: number) => {
+    deleteWishlist({
+      url_info: {
+        url: API_ENDPOINTS.WISHLIST_DELETE(id),
+      },
+      method: "DELETE",
+    }, (data: any) => {
+      setWishlist(wishlist.filter(book => book.id !== id))
+    })
+  }
+
+  const handleAddToCart = (book: any) => {
+    let bookData = {
+      quantity: 1,
+      book_details: {
+        id: book.book_id,
+        slug: book.slug,
+        title: book.title,
+        title_bn: book.title_bn,
+        cover_image: book.cover_image,
+        price: book.price,
+        discounted_price: book.discounted_price,
+        is_available: book.is_available,
+      },  
+      author_details: {
+        id: book.author_id,
+        slug: book.author_slug,
+        name: book.author_name,
+        name_bn: book.author_name_bn,
+      } 
     }
-  ])
-
-  const handleRemove = (id: number) => {
-    setWishlist(wishlist.filter(book => book.id !== id))
+    addToCart(bookData, 1)
   }
 
   return (
@@ -58,32 +99,33 @@ export default function WishlistPage() {
             <div className="space-y-6">
               {wishlist.map(book => (
                 <div
-                  key={book.id}
+                  key={book.book_id}
                   className="flex items-center gap-4 bg-white rounded-lg shadow-sm p-4"
                 >
                   <img
-                    src={book.cover}
+                    src={book.cover_image}
                     alt={book.title}
                     className="h-24 w-16 object-cover rounded-md"
                   />
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold">{book.title}</h2>
-                    <p className="text-sm text-gray-500">{book.author}</p>
+                    <h2 className="text-lg font-semibold">{currentLocale === "bn" ? book.title_bn : book.title}</h2>
+                    <p className="text-sm text-gray-500">{currentLocale === "bn" ? book.author_name_bn : book.author_name}</p>
                     <p className="text-sm font-medium mt-1">{book.price}</p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Button variant="default" size="sm" className="flex gap-2">
+                    <Button variant="default" size="sm" className="flex gap-2" onClick={() => handleAddToCart(book)}>
                       <ShoppingCart className="h-4 w-4" />
-                      {t('add_to_cart')}
+                      Add to Cart
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-red-500 hover:text-red-700"
-                      onClick={() => handleRemove(book.id)}
+                      onClick={() => handleDeleteWishlist(book.id)}
+                      disabled={isDeleting}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      {t('remove')}
+                      Remove
                     </Button>
                   </div>
                 </div>
@@ -96,12 +138,20 @@ export default function WishlistPage() {
                 href={`/${currentLocale}/shop`}
                 className="inline-block mt-4 text-brand-600 hover:underline"
               >
-                {t('go_shopping')}
+                Browse Books
               </Link>
             </div>
           )}
         </div>
       </div>
+
+      {totalPages > 1 && !isLoading && (
+        <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        />
+      )}
     </div>
   )
 }
