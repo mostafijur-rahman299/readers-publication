@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   BLOG_LIST: `${BACKEND_URL}/blog/api/v1/list/`,
   BLOG_DETAIL: (slug) => `${BACKEND_URL}/blog/api/v1/detail/${slug}/`,
   TESTIMONIALS: `${BACKEND_URL}/core/api/v1/testimonials/`,
+  UPDATE_USER_INFO: `${BACKEND_URL}/user/api/v1/user/profile/`,
 
   // Book
   WISHLIST: `${BACKEND_URL}/user/api/v1/wishlist/`,
@@ -27,6 +28,8 @@ export const API_ENDPOINTS = {
   BOOK_REVIEWS: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/${book_id}/`,
   BOOK_REVIEW_DISTRIBUTION: (book_id) => `${BACKEND_URL}/book/api/v1/reviews/distribution/${book_id}/`,
   BOOK_RELATED: `${BACKEND_URL}/book/api/v1/related-books/`,
+  BOOK_REVIEWS_CREATE: `${BACKEND_URL}/book/api/v1/reviews/create/`,
+  BOOK_REVIEWS_LIST: `${BACKEND_URL}/user/api/v1/reviews/`,
 
   // Cart
   CART_LIST: `${BACKEND_URL}/cart/api/v1/`,

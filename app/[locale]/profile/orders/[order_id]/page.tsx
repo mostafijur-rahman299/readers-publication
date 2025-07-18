@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLeft, CreditCard, Package, Truck, CheckCircle, Clock, MapPin, Phone, Mail } from "lucide-react"
+import { ArrowLeft, CreditCard, Package, Truck, CheckCircle, Clock, MapPin, Phone, Mail, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { API_ENDPOINTS } from "@/constants/apiEnds"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import useHttp from "@/hooks/useHttp"
 import { useLocale } from "next-intl"
@@ -20,6 +20,7 @@ export default function Component() {
   const { sendRequests: fetchOrderDetails, isLoading: isFetchingOrderDetails } = useHttp()
   const { t } = useTranslation()
   const locale = useLocale()
+  const router = useRouter()
 
   useEffect(() => {
     fetchOrderDetails(
@@ -35,10 +36,14 @@ export default function Component() {
     )
   }, [order_id])
 
+  const handleReviewClick = (bookId: string) => {
+    router.push(`/${locale}/books/${bookId}/review`)
+  }
+
   const trackingSteps = [
     {
       status: "Placed",
-      fullStatus: "Order Placed",
+      fullStatus: "Order Placed", 
       key: "pending",
       completed: ["pending", "processing", "ready_to_ship", "shipped", "delivered", "completed"].includes(
         order?.status,
@@ -48,7 +53,7 @@ export default function Component() {
     {
       status: "Processing",
       fullStatus: "Processing",
-      key: "processing",
+      key: "processing", 
       completed: ["ready_to_ship", "shipped", "delivered", "completed"].includes(order?.status),
       is_active: order?.status === "processing",
     },
@@ -60,7 +65,7 @@ export default function Component() {
       is_active: order?.status === "ready_to_ship",
     },
     {
-      status: "Shipped",
+      status: "Shipped", 
       fullStatus: "Shipped",
       key: "shipped",
       completed: ["delivered", "completed"].includes(order?.status),
@@ -196,16 +201,18 @@ export default function Component() {
                   {order?.order_items?.map((item: any) => (
                     <div key={item.id} className="flex gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
                       <div className="relative w-12 h-16 sm:w-16 sm:h-20 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image
-                          src={item.book.cover_image || "/images/book-skeleton.jpg"}
-                          alt={item.book.title}
-                          fill
-                          className="object-cover"
-                        />
+                        <Link href={`/${locale}/books/${item.book.slug}`}>
+                          <Image
+                            src={item.book.cover_image || "/images/book-skeleton.jpg"}
+                            alt={item.book.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </Link>
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-gray-900 text-sm sm:text-base line-clamp-2 leading-tight">
-                          {item.book.title}
+                          <Link href={`/${locale}/books/${item.book.slug}`}>{item.book.title}</Link>
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-500 mt-1">Qty: {item.quantity}</p>
                         <div className="flex justify-between items-center mt-2 gap-2">
@@ -214,6 +221,17 @@ export default function Component() {
                             ৳{item.price}
                           </span>
                         </div>
+                        {order?.status === "delivered" && !item.book.has_review && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2 w-full sm:w-auto"
+                            onClick={() => handleReviewClick(item.book.slug)}
+                          >
+                            <Star className="h-4 w-4 mr-1" />
+                            Write a Review
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -320,8 +338,8 @@ export default function Component() {
                     <Separator />
                     <div className="flex justify-between font-semibold text-base sm:text-lg">
                       <span>Total</span>
-                      <span className="text-teal-600">
-                        ৳{Number.parseFloat(order?.sub_total || 0) + Number.parseFloat(order?.shipping_cost || 0)}
+                      <span className="text-teal-600 ml-4">
+                        ৳{((Number.parseFloat(order?.sub_total || 0) + Number.parseFloat(order?.shipping_cost || 0)).toFixed(2)).replace(/\.?0+$/, '')}
                       </span>
                     </div>
                   </div>

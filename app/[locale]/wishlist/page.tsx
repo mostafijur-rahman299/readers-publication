@@ -102,14 +102,16 @@ export default function WishlistPage() {
                   key={book.book_id}
                   className="flex items-center gap-4 bg-white rounded-lg shadow-sm p-4"
                 >
+                  <Link href={`/${currentLocale}/books/${book.slug}`}>
                   <img
-                    src={book.cover_image}
+                    src={book.cover_image || "/images/book-skeleton.jpg"}
                     alt={book.title}
                     className="h-24 w-16 object-cover rounded-md"
                   />
+                  </Link>
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold">{currentLocale === "bn" ? book.title_bn : book.title}</h2>
-                    <p className="text-sm text-gray-500">{currentLocale === "bn" ? book.author_name_bn : book.author_name}</p>
+                    <Link href={`/${currentLocale}/books/${book.slug}`}> <h2 className="text-lg font-semibold">{currentLocale === "bn" ? book.title_bn : book.title}</h2></Link>
+                    <Link href={`/${currentLocale}/authors/${book.author_slug}`}> <p className="text-sm text-gray-500">{currentLocale === "bn" ? book.author_name_bn : book.author_name}</p></Link>
                     <p className="text-sm font-medium mt-1">{book.price}</p>
                   </div>
                   <div className="flex flex-col gap-2">

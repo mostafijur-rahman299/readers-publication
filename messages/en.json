@@ -418,6 +418,12 @@
         "related_books": "Related Books",
         "no_related_books": "No related books found.",
         "see_all": "See All",
+        "write_review": "Write Review",
+        "submit_review": "Submit Review",
+        "review_rating": "Review Rating",
+        "your_rating": "Rating",
+        "your_review": "Review Text",
+        "write_your_review": "Write your review",
         "preview": {
             "first": "First",
             "last": "Last",

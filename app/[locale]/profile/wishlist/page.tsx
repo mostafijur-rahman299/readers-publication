@@ -85,17 +85,21 @@ const Wishlist = () => {
                         >
                             <div className="flex items-center">
                                 <div className="relative mr-4 h-20 w-14 overflow-hidden rounded-md border border-gray-200">
-                                    <Image
-                                        src={item.cover_image || "/placeholder.svg"}
-                                        alt={item.title}
-                                        fill
-                                        className="object-cover"
-                                    />
+                                    <Link href={`/${locale}/books/${item.slug}`}>
+                                        <Image
+                                            src={item.cover_image || "/images/book-skeleton.jpg"}
+                                            alt={item.title}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </Link>
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-gray-900 group-hover:text-brand-600">{locale === "bn" ? item.title_bn : item.title}</h3>
-                                    <p className="text-sm text-gray-500">{locale === "bn" ? item.author_name_bn : item.author_name}</p>
-                                    <p className="mt-1 font-medium text-brand-600">{item.price}</p>
+                                    <Link href={`/${locale}/books/${item.slug}`}>
+                                        <h3 className="font-medium text-gray-900 group-hover:text-brand-600">{locale === "bn" ? item.title_bn : item.title}</h3>
+                                    </Link>
+                                    <Link href={`/${locale}/authors/${item.author_slug}`}><p className="text-sm text-gray-500">{locale === "bn" ? item.author_name_bn : item.author_name}</p></Link>
+                                    <p className="mt-1 font-medium text-brand-600">{item.price} tk</p>
                                 </div>
                             </div>
                             <div className="flex space-x-2">

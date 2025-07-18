@@ -422,6 +422,12 @@
         "related_books": "সম্পর্কিত বই",
         "no_related_books": "কোনো সম্পর্কিত বই পাওয়া যায়নি।",
         "see_all": "সব দেখুন",
+        "write_review": "রিভিউ লিখুন",
+        "submit_review": "রিভিউ জমা দিন",
+        "review_rating": "রিভিউ রেটিং",
+        "your_rating": "আপনার রেটিং",
+        "your_review": "আপনার রিভিউ",
+        "write_your_review": "আপনার রিভিউ লিখুন",
         "preview": {
             "first": "প্রথম",
             "last": "শেষ",

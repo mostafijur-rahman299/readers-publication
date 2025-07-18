@@ -53,6 +53,12 @@ export default function BookDetailPage() {
   const router = useRouter()
   const { addToCart } = useCart()
   const { sendRequests: addToWishlist, isLoading: isAddingToWishlist } = useHttp()  
+  const [selectedRating, setSelectedRating] = useState(0)
+  const { sendRequests: removeFromWishlist, isLoading: isRemovingFromWishlist } = useHttp()
+
+  const onRatingChange = (rating: number) => {
+    setSelectedRating(rating)
+  }
 
   // Carousel state for related books
   const [relatedCarouselIndex, setRelatedCarouselIndex] = useState(0)
@@ -158,11 +164,6 @@ export default function BookDetailPage() {
     setSelectedBookImage(image)
   }
 
-  // Wishlist toggle
-  const toggleWishlist = () => {
-    setIsWishlisted((prev) => !prev)
-  }
-
   // Share book
   const shareBook = () => {
     if (navigator.share) {
@@ -227,16 +228,34 @@ export default function BookDetailPage() {
   }
 
   const handleAddToWishlist = () => {
-    addToWishlist({
-      url_info: {
-        url: API_ENDPOINTS.WISHLIST,
-      },
-      method: "POST",
-      data: {
-        book_id: bookData.id,
-      },
-    }, (data: any) => {
-    })
+    if (!bookData?.is_in_wishlist){
+      addToWishlist({
+        url_info: {
+          url: API_ENDPOINTS.WISHLIST,
+        },
+        method: "POST",
+        data: {
+          book_id: bookData.id,
+        },
+      }, (data: any) => {
+        setBookData({
+          ...bookData,
+          is_in_wishlist: true,
+        })
+      })
+    }else{
+      removeFromWishlist({
+        url_info: {
+          url: API_ENDPOINTS.WISHLIST_DELETE(`book_${bookData.id}`),
+        },
+        method: "DELETE",
+      }, (data: any) => {
+        setBookData({
+          ...bookData,
+          is_in_wishlist: false,
+        })
+      })
+    }
   }
 
   return (
@@ -483,9 +502,9 @@ export default function BookDetailPage() {
                   size="sm"
                   onClick={handleAddToWishlist}
                   disabled={isAddingToWishlist}
-                  className={`h-7 w-7 ${isWishlisted ? "text-red-500 border-red-500" : ""}`}
+                  className={`h-7 w-7 ${bookData?.is_in_wishlist ? "text-red-500 border-red-500" : ""}`}
                 >
-                  <Heart className={`h-3.5 w-3.5 ${isWishlisted ? "fill-current" : ""}`} />
+                  <Heart className={`h-3.5 w-3.5 ${bookData?.is_in_wishlist ? "fill-current" : ""}`} />
                 </Button>
                 <Button variant="outline" size="sm" onClick={shareBook} className="h-7 w-7 bg-transparent">
                   <Share2 className="h-3.5 w-3.5" />
@@ -610,6 +629,55 @@ export default function BookDetailPage() {
                 </div>
               </div>
 
+              {/* Add Review Form */}
+              {bookData?.can_give_review && <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold mb-4">{t("write_review")}</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  // Handle form submission
+                }}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">{t("your_rating")}</label>
+                    <div className="flex gap-2">
+                      {[1,2,3,4,5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          className="p-1 hover:scale-110 transition-transform"
+                          onClick={() => {
+                            // Update the selected rating
+                            setSelectedRating(rating);
+                            
+                            // Optional: Call any additional rating handlers
+                            if (onRatingChange) {
+                              onRatingChange(rating);
+                            }
+                          }}
+                        >
+                          <Star 
+                            className={`h-6 w-6 ${
+                              rating <= selectedRating 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-300'
+                            }`} 
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">{t("your_review")}</label>
+                    <textarea
+                      className="w-full rounded-md border border-gray-300 p-2 min-h-[100px]"
+                      placeholder={t("write_your_review")}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full sm:w-auto">
+                    {t("submit_review")}
+                  </Button>
+                </form>
+              </div>}
+
               {/* Rating Breakdown */}
               <div className="mb-8">
                 <h3 className="font-semibold mb-4 text-sm sm:text-base">{t("rating_distribution")}</h3>
@@ -693,13 +761,11 @@ export default function BookDetailPage() {
                     </Button>
                     <div className="flex gap-1">
                       {(() => {
-                        // Only show three pages at a time: current, previous, next
                         const totalPages = bookReviewsPagination?.total_pages;
                         const current = currentReviewPage;
                         let start = Math.max(1, current - 1);
                         let end = Math.min(totalPages, current + 1);
 
-                        // Always show three if possible
                         if (end - start < 2) {
                           if (start === 1) {
                             end = Math.min(start + 2, totalPages);

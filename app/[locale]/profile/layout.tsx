@@ -11,8 +11,6 @@ import {
   HeartIcon,
   StarIcon,
   Settings,
-  CreditCard,
-  BellIcon,
   LogOutIcon,
   ChevronDown,
   ChevronUp,
@@ -21,16 +19,27 @@ import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import { useSelector } from "react-redux";
 import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { logout } from "@/store/userSlice";
+import { useDispatch } from "react-redux";
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { userInfo } = useSelector((state: any) => state.user);
   const t = useTranslations("profile");
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const dispatch = useDispatch();
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const router = useRouter();
 
   const activeTab = pathname.split("/").pop() || "orders";
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem("access_token")
+    localStorage.removeItem("refresh_token")
+    router.push("/");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,50 +167,13 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
                 </nav>
 
                 <div className="mt-6">
-                  <h3 className="text-lg font-semibold">{t("account")}</h3>
-                  <div className="border-b border-gray-100 mt-2 mb-4"></div>
-                  <nav className="space-y-1">
-                    <Link
-                      href="/profile/address"
-                      className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
-                        activeTab === "address"
-                          ? "bg-brand-50 text-brand-600"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <MapPin className="mr-3 h-5 w-5" />
-                      <span>{t("address.side_title")}</span>
-                    </Link>
-                    <Link
-                      href="/profile/payment"
-                      className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
-                        activeTab === "payment"
-                          ? "bg-brand-50 text-brand-600"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <CreditCard className="mr-3 h-5 w-5" />
-                      <span>{t("payment_methods.side_title")}</span>
-                    </Link>
-                    <Link
-                      href="/profile/notifications"
-                      className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium ${
-                        activeTab === "notifications"
-                          ? "bg-brand-50 text-brand-600"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <BellIcon className="mr-3 h-5 w-5" />
-                      <span>{t("notifications.side_title")}</span>
-                    </Link>
-                    <Link
-                      href="/logout"
-                      className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                      <LogOutIcon className="mr-3 h-5 w-5" />
-                      <span>{t("logout")}</span>
-                    </Link>
-                  </nav>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <LogOutIcon className="mr-3 h-5 w-5" />
+                    <span>{t("logout")}</span>
+                  </button>
                 </div>
               </div>
             </div>
