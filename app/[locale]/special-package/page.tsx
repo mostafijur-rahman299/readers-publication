@@ -4,6 +4,11 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import Image from "next/image"
 import { useTranslations } from "next-intl"
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useEffect, useState } from "react"
+import Pagination from "@/components/pagination"
+import Link from "next/link"
 
 const packages = [
   {
@@ -27,9 +32,32 @@ const packages = [
 
 export default function SpecialPackagesPage() {
   const t = useTranslations("special_package")
+  const { sendRequests, isLoading, error } = useHttp()
+  const [specialPackages, setSpecialPackages] = useState([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const getSpecialPackages = (params: any = {}) => {
+    sendRequests({
+      url_info: {
+        url: API_ENDPOINTS.SPECIAL_PACKAGES,
+      },
+      params: params,
+    }, (res: any) => {
+      setSpecialPackages(res.results)
+      setTotalPages(res.total_pages)
+      setCurrentPage(res.current_page)
+    })
+  }
+
+  useEffect(() => {
+    getSpecialPackages({
+      page: currentPage,
+    })
+  }, [currentPage])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-10">
       <Header />
       <Navigation />
 
@@ -39,20 +67,41 @@ export default function SpecialPackagesPage() {
           <p className="mt-2 text-sm text-gray-600">{t("description")}</p>
         </div>
 
+        {isLoading && <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>}
+
+        {error && <div className="flex justify-center items-center h-screen">
+          <p className="text-red-500">{error?.message}</p>
+        </div>}
+
+        {specialPackages.length === 0 && <div className="flex justify-center items-center h-screen">
+          <p className="text-gray-500">No special packages found</p>
+        </div>}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {packages.map((pkg) => (
-            <div key={pkg.id} className="rounded-lg overflow-hidden shadow-md bg-white">
-              <Image
-                src={pkg.image}
-                alt={`Package ${pkg.id}`}
-                width={600}
-                height={400}
-                className="w-full h-80 object-cover"
-              />
+          {specialPackages.map((pkg) => (
+            <div key={pkg.uuid} className="rounded-lg overflow-hidden shadow-md bg-white">
+              <Link href={`/special-package/${pkg.uuid}`}>  
+                  <Image
+                    src={pkg.image}
+                    alt={`Package ${pkg.uuid}`}
+                    width={600}
+                    height={400}
+                    className="w-full h-80 object-cover"
+                />
+              </Link>
             </div>
           ))}
         </div>
       </div>
+
+      {totalPages > 1 && <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />}
+      
     </div>
   )
 }

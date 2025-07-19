@@ -9,7 +9,7 @@ import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon, YoutubeIcon } f
 export function SiteFooter() {
   const t = useTranslations('footer');
   const locale = useLocale()
-  const generalData = useSelector((state: any) => state.generalData.generalData)
+  const generalData = useSelector((state: any) => state.generalData)
 
   return (
     <footer className="border-t bg-white">

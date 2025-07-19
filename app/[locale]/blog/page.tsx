@@ -4,49 +4,41 @@ import { Header } from "@/components/header"
 import { Navigation } from "@/components/navigation"
 import Link from "next/link"
 import { useTranslations, useLocale } from "next-intl"
+import useHttp from "@/hooks/useHttp"
+import { API_ENDPOINTS } from "@/constants/apiEnds"
+import { useState } from "react"
+import { useEffect } from "react"
+import Pagination from "@/components/pagination"
 
 export default function BlogListPage() {
     const t = useTranslations("blog")
     const locale = useLocale()
+    const {sendRequests, isLoading, error} = useHttp()
+    const [blogPosts, setBlogPosts] = useState([])
+    const [totalPages, setTotalPages] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: "The Art of Storytelling",
-      subtitle: "Modern Literature and Emotional Impact",
-      description: "Explore how storytelling is evolving through fresh voices, unconventional styles, and emotional depth in contemporary writing.",
-      imageUrl: "/images/storytelling.jpg",
-      author: "Jane D’Souza",
-      date: "September 15, 2025",
-      readTime: "6 min read",
-      slug: "art-of-storytelling"
-    },
-    {
-      id: 2,
-      title: "Rise of Independent Publishing",
-      subtitle: "Breaking Barriers in the Book World",
-      description: "Independent publishing empowers authors like never before. Learn how it's changing the landscape for readers and writers alike.",
-      imageUrl: "/images/indie-publishing.jpg",
-      author: "Alex Rahman",
-      date: "August 29, 2025",
-      readTime: "5 min read",
-      slug: "independent-publishing"
-    },
-    {
-      id: 3,
-      title: "Submitting Your First Manuscript",
-      subtitle: "Tips from a Publisher’s Perspective",
-      description: "A step-by-step guide for writers preparing their manuscript for submission. Avoid common pitfalls and get noticed.",
-      imageUrl: "/images/manuscript.jpg",
-      author: "Nadia Karim",
-      date: "August 10, 2025",
-      readTime: "4 min read",
-      slug: "submit-manuscript"
+    const getBlogPosts =  (params: any = {}) => {
+      sendRequests({
+        url_info: {
+          url: API_ENDPOINTS.BLOG_LIST,
+        },
+        params: params
+      }, (res: any) => {
+        setBlogPosts(res.results)
+        setTotalPages(res.total_pages)
+        setCurrentPage(res.current_page)
+      })
     }
-  ]
+
+    useEffect(() => {
+        getBlogPosts({
+            page: currentPage,
+        })  
+    }, [currentPage])
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-gray-50 text-gray-800 mb-10">
       <Header />
       <Navigation />
 
@@ -56,23 +48,33 @@ export default function BlogListPage() {
           <p className="text-gray-600">{(t("subtitle"))}</p>
         </div>
 
+        {isLoading && <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>}
+
+        {blogPosts?.length === 0 && (
+          <div className="flex justify-center items-center h-screen">
+            <p className="text-gray-600">No blog posts found</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {blogPosts.map((post) => (
+          {blogPosts?.map((post) => (
             <div key={post.id} className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition duration-300">
               <Link href={`/blog/${post.slug}`}>
-                <img src={post.imageUrl} alt={post.title} className="w-full h-48 object-cover" />
+                <img src={post.cover_image} alt={post.title} className="w-full h-48 object-cover" />
               </Link>
               <div className="p-6">
                 <Link href={`/blog/${post.slug}`}>
-                  <h2 className="text-2xl font-bold text-blue-700 hover:underline">{post.title}</h2>
+                  <h2 className="text-2xl font-bold text-blue-700 hover:underline">{locale === "bn" ? post.title_bn : post.title}</h2>
                 </Link>
-                <p className="text-sm text-gray-500 mb-1">{post.subtitle}</p>
-                <p className="text-sm text-gray-600 mb-3">{post.description}</p>
+                <p className="text-sm text-gray-500 mb-1">{locale === "bn" ? post.subtitle_bn : post.subtitle}</p>
+                <p className="text-sm text-gray-600 mb-3">{locale === "bn" ? post.content_bn : post.content}</p>
                 <div className="flex justify-between text-xs text-gray-500">
-                  <span>{post.date}</span>
-                  <span>{post.readTime}</span>
+                  <span>{post.published_date}</span>
+                  <span>{post.read_time} min read</span>
                 </div>
-                <div className="mt-2 text-sm text-gray-700">By {post.author}</div>
+                <div className="mt-2 text-sm text-gray-700">By {locale === "bn" ? post.author_name_bn : post.author_name}</div>
                 <Link
                   href={`/blog/${post.slug}`}
                   className="mt-4 inline-block text-blue-600 hover:underline text-sm"
@@ -84,6 +86,12 @@ export default function BlogListPage() {
           ))}
         </div>
       </div>
+      {totalPages > 1 && <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />}
+
     </div>
   )
 }

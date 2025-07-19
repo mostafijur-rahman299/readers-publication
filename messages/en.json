@@ -25,6 +25,10 @@
         "previous": "Previous",
         "next": "Next"
     },
+    "blog": {
+        "title": "Our Blog",
+        "subtitle": "Read our latest blog posts and stay updated with the latest news and trends in the book world."
+    },
     "footer": {
         "about": "About",
         "contact": "Contact",
@@ -130,15 +134,15 @@
     "support": {
         "title": "Help & Support",
         "description": "We're here to help you. If you're experiencing any issues or have questions, feel free to reach out.",
+        "description_2": "We believe that your feedback is invaluable to us. You can contact us with any questions, suggestions, or complaints – and we will do our best to provide a quick solution.",
+        "description_3": "Please include the following information when contacting us:",
+        "description_4": "The device and browser you are using",
+        "description_5": "A brief description of the issue you are experiencing",
+        "description_6": "If possible, a screenshot of the issue",
+        "description_7": "We generally try to respond within 24 hours. Thank you for being with us.",
         "email": "Your Email",
-        "email_placeholder": "example@domain.com",
-        "message": "Message",
-        "message_placeholder": "Describe your issue or question here...",
-        "submit": "Send Message",
-        "processing": "Sending...",
-        "success_message": "Thank you! We've received your message.",
-        "follow_up_message": "Our support team will contact you as soon as possible.",
         "back_to_home": "Back to Home"
+
       },
       "wishlist": {
         "title": "Your Wishlist",
